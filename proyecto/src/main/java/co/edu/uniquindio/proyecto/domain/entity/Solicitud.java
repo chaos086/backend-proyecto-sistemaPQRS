@@ -60,7 +60,7 @@ public class Solicitud {
         this.descripcion = descripcion;
 
         this.estado = EstadoSolicitud.REGISTRADA;
-        registrarHistorial("REGISTRAR_SOLICITUD", solicitante, "Solicitud registrada");
+        registrarHistorial(AccionHistorial.REGISTRAR_SOLICITUD, solicitante, "Solicitud registrada");
     }
 
     /**
@@ -95,7 +95,7 @@ public class Solicitud {
 
         this.tipoSolicitud = tipo;
         this.estado = EstadoSolicitud.CLASIFICADA;
-        registrarHistorial("CLASIFICAR_SOLICITUD", coordinador, "Tipo: " + tipo);
+        registrarHistorial(AccionHistorial.CLASIFICAR_SOLICITUD, coordinador, "Tipo: " + tipo);
     }
 
     /**
@@ -115,7 +115,7 @@ public class Solicitud {
 
         this.prioridad = prioridad;
         this.justificacionPrioridad = justificacion;
-        registrarHistorial("PRIORIZAR_SOLICITUD", coordinador, "Prioridad: " + prioridad);
+        registrarHistorial(AccionHistorial.PRIORIZAR_SOLICITUD, coordinador, "Prioridad: " + prioridad);
     }
 
     /**
@@ -135,7 +135,7 @@ public class Solicitud {
 
         this.responsable = new UsuarioReferencia(responsable.id().value(), responsable.nombre());
         this.estado = EstadoSolicitud.EN_ATENCION;
-        registrarHistorial("ASIGNAR_RESPONSABLE", coordinador, "Responsable: " + responsable.nombre());
+        registrarHistorial(AccionHistorial.ASIGNAR_RESPONSABLE, coordinador, "Responsable: " + responsable.nombre());
     }
 
     /**
@@ -154,7 +154,7 @@ public class Solicitud {
             throw new BusinessRuleViolation("Solo el responsable asignado puede marcar como atendida");
 
         this.estado = EstadoSolicitud.ATENDIDA;
-        registrarHistorial("MARCAR_ATENDIDA", responsable, observacion == null ? "Atendida" : observacion);
+        registrarHistorial(AccionHistorial.MARCAR_ATENDIDA, responsable, observacion == null ? "Atendida" : observacion);
     }
 
     /**
@@ -171,7 +171,7 @@ public class Solicitud {
             throw new BusinessRuleViolation("Para cerrar se requiere observación de cierre");
 
         this.estado = EstadoSolicitud.CERRADA;
-        registrarHistorial("CERRAR_SOLICITUD", responsable, observacionCierre);
+        registrarHistorial(AccionHistorial.CERRAR_SOLICITUD, responsable, observacionCierre);
     }
 
     private void asegurarNoCerrada() {
@@ -179,7 +179,7 @@ public class Solicitud {
             throw new BusinessRuleViolation("Una solicitud CERRADA no puede modificarse");
     }
 
-    private void registrarHistorial(String accion, UsuarioReferencia usuario, String observacion) {
+    private void registrarHistorial(AccionHistorial accion, UsuarioReferencia usuario, String observacion) {
         historial.add(new EntradaHistorial(
                 UUID.randomUUID(),
                 Instant.now(),
