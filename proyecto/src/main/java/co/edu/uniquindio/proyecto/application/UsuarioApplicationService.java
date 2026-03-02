@@ -1,7 +1,8 @@
 package co.edu.uniquindio.proyecto.application;
 
-import co.edu.uniquindio.proyecto.infrastructure.entity.Usuario;
+import co.edu.uniquindio.proyecto.domain.entity.Usuario;
 import co.edu.uniquindio.proyecto.domain.valueObject.IdentificacionUsuario;
+import co.edu.uniquindio.proyecto.domain.valueObject.Email;
 import co.edu.uniquindio.proyecto.domain.valueObject.enums.Rol;
 import co.edu.uniquindio.proyecto.infrastructure.persistence.UsuarioRepository;
 import org.springframework.stereotype.Service;
@@ -17,15 +18,19 @@ public class UsuarioApplicationService {
         this.usuarioRepository = usuarioRepository;
     }
 
-    public Usuario crearUsuario(String nombre, Rol rol) {
+    public Usuario crearUsuario(String nombre, Rol rol, String email) {
         if (nombre == null || nombre.isBlank()) {
             throw new IllegalArgumentException("El nombre es obligatorio");
         }
         if (rol == null) {
             throw new IllegalArgumentException("El rol es obligatorio");
         }
+        if (email == null || email.isBlank()) {
+            throw new IllegalArgumentException("El email es obligatorio");
+        }
 
-        Usuario usuario = Usuario.crear(nombre, rol);
+        Email emailVO = new Email(email);
+        Usuario usuario = Usuario.crear(nombre, rol, emailVO);
         return usuarioRepository.save(usuario);
     }
 

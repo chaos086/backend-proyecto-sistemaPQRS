@@ -1,7 +1,7 @@
 package co.edu.uniquindio.proyecto.infrastructure.api;
 
 import co.edu.uniquindio.proyecto.application.UsuarioApplicationService;
-import co.edu.uniquindio.proyecto.infrastructure.entity.Usuario;
+import co.edu.uniquindio.proyecto.domain.entity.Usuario;
 import co.edu.uniquindio.proyecto.domain.valueObject.IdentificacionUsuario;
 import co.edu.uniquindio.proyecto.domain.valueObject.enums.Rol;
 import org.springframework.http.ResponseEntity;
@@ -34,16 +34,18 @@ public class UsuarioController {
 
     /**
      * Crea un nuevo usuario en el sistema.
-     * @param payload Mapa con los datos del usuario (nombre, rol)
+     * @param payload Mapa con los datos del usuario (nombre, rol, email)
      * @return Usuario creado
      */
     @PostMapping
     public ResponseEntity<Usuario> crearUsuario(@RequestBody Map<String, Object> payload) {
         String nombre = (String) payload.get("nombre");
         String rolStr = (String) payload.get("rol");
+        String email = (String) payload.get("email");
+        
         Rol rol = Rol.valueOf(rolStr.toUpperCase());
 
-        Usuario usuario = usuarioService.crearUsuario(nombre, rol);
+        Usuario usuario = usuarioService.crearUsuario(nombre, rol, email);
         return ResponseEntity.ok(usuario);
     }
 
