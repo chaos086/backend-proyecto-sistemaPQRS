@@ -31,15 +31,6 @@ public class SolicitudApplicationService {
 
     public Solicitud crearSolicitud(UUID solicitanteId, String nombreSolicitante, 
                                      CanalOrigen canalOrigen, String descripcion) {
-        if (solicitanteId == null) throw new DomainException("El ID del solicitante es obligatorio");
-        if (nombreSolicitante == null || nombreSolicitante.isBlank()) {
-            throw new DomainException("El nombre del solicitante es obligatorio");
-        }
-        if (canalOrigen == null) throw new DomainException("El canal de origen es obligatorio");
-        if (descripcion == null || descripcion.isBlank()) {
-            throw new DomainException("La descripción es obligatoria");
-        }
-
         IdentificacionUsuario idSolicitante = new IdentificacionUsuario(solicitanteId);
         Usuario solicitante = usuarioRepository.findById(idSolicitante)
                 .orElseThrow(() -> new DomainException("Solicitante no encontrado"));

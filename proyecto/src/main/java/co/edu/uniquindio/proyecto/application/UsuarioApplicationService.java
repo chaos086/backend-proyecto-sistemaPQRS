@@ -19,16 +19,6 @@ public class UsuarioApplicationService {
     }
 
     public Usuario crearUsuario(String nombre, Rol rol, String email) {
-        if (nombre == null || nombre.isBlank()) {
-            throw new IllegalArgumentException("El nombre es obligatorio");
-        }
-        if (rol == null) {
-            throw new IllegalArgumentException("El rol es obligatorio");
-        }
-        if (email == null || email.isBlank()) {
-            throw new IllegalArgumentException("El email es obligatorio");
-        }
-
         Email emailVO = new Email(email);
         Usuario usuario = Usuario.crear(nombre, rol, emailVO);
         return usuarioRepository.save(usuario);
