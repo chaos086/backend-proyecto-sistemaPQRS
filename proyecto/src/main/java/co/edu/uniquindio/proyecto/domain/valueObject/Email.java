@@ -5,9 +5,7 @@ import co.edu.uniquindio.proyecto.domain.exception.DomainException;
 /**
  * Value Object que representa un correo electrónico.
  * Valida que el formato del email sea correcto.
- * 
- * @author Sistema PQRS
- * @version 1.0
+ *
  */
 public record Email(String value) {
     public Email {

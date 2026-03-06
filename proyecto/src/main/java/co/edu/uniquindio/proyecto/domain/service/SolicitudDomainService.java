@@ -5,8 +5,6 @@ import co.edu.uniquindio.proyecto.domain.entity.Usuario;
 import co.edu.uniquindio.proyecto.domain.exception.BusinessRuleViolation;
 import co.edu.uniquindio.proyecto.domain.valueObject.enums.EstadoSolicitud;
 import co.edu.uniquindio.proyecto.domain.valueObject.enums.Rol;
-import org.springframework.stereotype.Service;
-
 import java.util.List;
 
 /**
@@ -18,7 +16,6 @@ import java.util.List;
  * - Solo usuarios activos pueden crear o atender solicitudes
  * - Solo docentes pueden ser asignados como responsables
  */
-@Service
 public class SolicitudDomainService {
 
     /** Máximo de solicitudes pendientes que puede tener un solicitante */

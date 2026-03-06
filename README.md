@@ -47,19 +47,22 @@ El sistema permite a los estudiantes, docentes y demás usuarios de la instituci
 
 ```
 proyecto/
-├── src/
-│   ├── main/
-│   │   └── java/co/edu/uniquindio/proyecto/
+├── src main/
+│  /
+│   ├── │   └── java/co/edu/uniquindio/proyecto/
 │   │       ├── domain/
 │   │       │   ├── entity/          # Entidades del dominio
 │   │       │   ├── valueObject/     # Value Objects y Enums
-│   │       │   ├── exception/        # Excepciones del dominio
-│   │       │   └── service/         # Domain Services
-│   │       ├── application/         # Application Services
-│   │       └── infrastructure/      # Controllers y Repositorios
+│   │       │   ├── exception/       # Excepciones del dominio
+│   │       │   └── service/          # Domain Services
+│   │       ├── application/          # Application Services
+│   │       ├── infrastructure/      # Controllers y Repositorios
+│   │       └── config/              # Configuración de Spring
 │   └── test/
 │       └── java/.../domain/         # Pruebas unitarias del dominio
 ├── build.gradle
+├── gradlew
+├── gradlew.bat
 └── README.md
 ```
 ---
@@ -73,12 +76,34 @@ proyecto/
 
 ### Compilar el Proyecto
 
+**Windows (PowerShell):**
+```powershell
+.\gradlew compileJava
+```
+
+**Windows (CMD):**
+```cmd
+gradlew compileJava
+```
+
+**Linux/Mac:**
 ```bash
 ./gradlew compileJava
 ```
 
 ### Ejecutar las Pruebas
 
+**Windows (PowerShell):**
+```powershell
+.\gradlew test
+```
+
+**Windows (CMD):**
+```cmd
+gradlew test
+```
+
+**Linux/Mac:**
 ```bash
 ./gradlew test
 ```
@@ -93,6 +118,17 @@ build/reports/tests/test/index.html
 
 ### Ejecutar la Aplicación
 
+**Windows (PowerShell):**
+```powershell
+.\gradlew bootRun
+```
+
+**Windows (CMD):**
+```cmd
+gradlew bootRun
+```
+
+**Linux/Mac:**
 ```bash
 ./gradlew bootRun
 ```
