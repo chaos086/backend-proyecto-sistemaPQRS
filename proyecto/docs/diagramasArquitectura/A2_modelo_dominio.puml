@@ -61,8 +61,6 @@ package "Agregado Usuario" {
         +activar(): void
         +agregarSolicitudRegistrada(solicitudRef): void
     }
-    ' Relación entre Usuarios y Solicitud.
-    Usuario "1" --> "0..5" UsuarioReferencia : SolicitudesRegistradas
 }
 
 ' ============ VALUE OBJECTS ============
