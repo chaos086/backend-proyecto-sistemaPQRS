@@ -69,6 +69,34 @@ proyecto/
 
 ## Compilación y Ejecución
 
+### Ejecución con UN SOLO CLIC (Botón)
+
+#### Windows 11 (Doble clic):
+simplemente haz **doble clic** en el archivo:
+
+```
+compilar_y_probar.bat
+```
+
+ubicado en la raíz del proyecto. ¡Listo! ✅
+
+#### Linux/Mac (Doble clic o terminal):
+Ejecuta el script desde la terminal:
+
+```bash
+# Dar permisos (solo una vez)
+chmod +x compilar_y_probar.sh
+
+# Ejecutar
+./compilar_y_probar.sh
+```
+
+O simplemente haz doble clic en el archivo si tu entorno lo permite.
+
+---
+
+### 📋 Manual (Opción por comandos)
+
 ### Prerrequisitos
 
 - JDK 25 instalado en el sistema

@@ -1,4 +1,6 @@
 @echo off
+cd /d "%~dp0proyecto"
+
 echo ========================================
 echo   Compilando Proyecto PQRS - UniQuindio
 echo ========================================
@@ -35,6 +37,6 @@ echo   COMPILACION Y PRUEBAS EXITOSAS!
 echo ========================================
 echo.
 echo Reporte de pruebas disponible en:
-echo build\reports\tests\test\index.html
+echo proyecto\build\reports\tests\test\index.html
 echo.
 pause
