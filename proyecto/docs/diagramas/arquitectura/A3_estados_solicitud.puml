@@ -60,6 +60,12 @@ note bottom
   RF-06: Auditoria
   Cada transicion registra EntradaHistorial
   con AccionHistorial + usuarioResponsable + observacion
+  
+  Valores de AccionHistorial:
+  • REGISTRAR_SOLICITUD, CLASIFICAR_SOLICITUD, PRIORIZAR_SOLICITUD
+  • ASIGNAR_RESPONSABLE, MARCAR_ATENDIDA, CERRAR_SOLICITUD
+  • SUGERENCIA_IA_GENERADA, SUGERENCIA_IA_CONFIRMADA
+  • SUGERENCIA_IA_AJUSTADA, RESUMEN_IA_GENERADO
 end note
 
 @enduml
