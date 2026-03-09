@@ -11,6 +11,19 @@ import java.util.UUID;
 
 class EntradaHistorialTest {
 
+    /**
+     * Verifica que una entrada de historial se cree correctamente cuando
+     * se proporcionan todos los datos requeridos.
+     *
+     * GIVEN: un usuario responsable válido, una acción de historial
+     * y una observación asociada
+     * WHEN: se crea una nueva instancia de EntradaHistorial
+     * THEN:
+     *  - la entrada tiene un identificador válido
+     *  - la acción registrada corresponde a la proporcionada
+     *  - el usuario responsable se almacena correctamente
+     *  - la observación se guarda correctamente
+     */
     @Test
     void crearEntradaHistorialValida() {
         UsuarioReferencia usuario = new UsuarioReferencia(IdentificacionUsuario.newId().value(), "Solicitante");
