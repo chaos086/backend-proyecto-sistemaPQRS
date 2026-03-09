@@ -1,0 +1,65 @@
+@startuml
+!theme plain
+skinparam backgroundColor #FEFEFE
+skinparam stateBackgroundColor #E1F5FE
+skinparam stateBorderColor #0288D1
+
+title Ciclo de Vida - Solicitud Academica
+
+state REGISTRADA
+state CLASIFICADA
+state EN_ATENCION
+state ATENDIDA
+state CERRADA
+
+[*] --> REGISTRADA
+
+REGISTRADA --> CLASIFICADA : clasificar()
+
+CLASIFICADA --> CLASIFICADA : priorizar()
+
+CLASIFICADA --> EN_ATENCION : asignarResponsable()
+
+EN_ATENCION --> ATENDIDA : marcarAtendida()
+
+ATENDIDA --> CERRADA : cerrar()
+
+CERRADA --> [*]
+
+note right of REGISTRADA
+  RF-01: REGISTRAR_SOLICITUD
+  Guard: N/A
+  Siguiente: clasificar()
+end note
+
+note right of CLASIFICADA
+  RF-02, RF-03: CLASIFICAR/PRIORIZAR
+  Guard: responsable.activo()
+  Siguiente: asignarResponsable() o priorizar()
+end note
+
+note right of EN_ATENCION
+  RF-05: ASIGNAR_RESPONSABLE
+  Guard: responsable == asignado
+  Siguiente: marcarAtendida()
+end note
+
+note right of ATENDIDA
+  RF-04: MARCAR_ATENDIDA
+  Guard: observacionCierre != null
+  Siguiente: cerrar()
+end note
+
+note right of CERRADA
+  RF-08: CERRAR_SOLICITUD
+  Guard: estado == ATENDIDA
+  No se puede modificar
+end note
+
+note bottom
+  RF-06: Auditoria
+  Cada transicion registra EntradaHistorial
+  con AccionHistorial + usuarioResponsable + observacion
+end note
+
+@enduml

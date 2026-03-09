@@ -1,0 +1,169 @@
+@startuml
+!theme plain
+skinparam backgroundColor #FEFEFE
+skinparam classBackgroundColor #FFFFFF
+skinparam classBorderColor #333333
+skinparam classAttributeIconSize 0
+
+title A.2 — Modelo de Dominio - Sistema de Gestión de Solicitudes Académicas
+
+' ============ AGREGADO: SOLICITUD ============
+
+package "Agregado Solicitud" {
+
+    class Solicitud <<AggregateRoot>> {
+        -{final} id: SolicitudId
+        -{final} solicitante: UsuarioReferencia
+        -{final} canalOrigen: CanalOrigen
+        -{final} fechaRegistro: Instant
+        -tipoSolicitud: TipoSolicitud
+        -descripcion: DescripcionSolicitud
+        -prioridad: Prioridad
+        -justificacionPrioridad: JustificacionPrioridad
+        -estado: EstadoSolicitud
+        -responsable: UsuarioReferencia
+        -{final} historial: List<EntradaHistorial>
+        --
+        +crear(solicitante, canalOrigen, descripcion): Solicitud {static}
+        +clasificar(tipo, coordinador): void
+        +priorizar(prioridad, justificacion, coordinador): void
+        +asignarResponsable(responsable, coordinador): void
+        +marcarAtendida(responsable, observacion): void
+        +cerrar(responsable, observacionCierre): void
+        +historial(): List<EntradaHistorial>
+    }
+
+    class EntradaHistorial <<Entity>> {
+        -{final} id: UUID
+        -{final} fechaHora: Instant
+        -{final} accion: AccionHistorial
+        -{final} usuarioResponsable: UsuarioReferencia
+        -{final} observacion: String
+    }
+
+    Solicitud "1" *-- "0..*" EntradaHistorial : contiene
+}
+
+' ============ AGREGADO: USUARIO ============
+
+package "Agregado Usuario" {
+
+    class Usuario <<AggregateRoot>> {
+        -{final} id: IdentificacionUsuario
+        -{final} nombre: String
+        -{final} rol: Rol
+        -{final} email: Email
+        -activo: boolean
+        -{final} solicitudesRegistradas: List<UsuarioReferencia>
+        --
+        +crear(nombre, rol, email): Usuario {static}
+        +desactivar(): void
+        +activar(): void
+        +agregarSolicitudRegistrada(solicitudRef): void
+    }
+}
+
+' ============ VALUE OBJECTS ============
+
+package "Value Objects" {
+
+    class SolicitudId <<ValueObject>> {
+        -{final} value: UUID
+        --
+        +newId(): SolicitudId {static}
+    }
+
+    class IdentificacionUsuario <<ValueObject>> {
+        -{final} value: UUID
+        --
+        +newId(): IdentificacionUsuario {static}
+    }
+
+    class UsuarioReferencia <<ValueObject>> {
+        -{final} value: UUID
+        -{final} nombre: String
+        --
+        +from(id, nombre): UsuarioReferencia {static}
+    }
+
+    class Email <<ValueObject>> {
+        -{final} value: String
+    }
+
+    class DescripcionSolicitud <<ValueObject>> {
+        -{final} value: String
+    }
+
+    class JustificacionPrioridad <<ValueObject>> {
+        -{final} value: String
+    }
+}
+
+' ============ ENUMERACIONES ============
+
+package "Enumeraciones" {
+
+    enum EstadoSolicitud {
+        REGISTRADA
+        CLASIFICADA
+        EN_ATENCION
+        ATENDIDA
+        CERRADA
+    }
+
+    enum TipoSolicitud {
+        REGISTRO_ASIGNATURAS
+        HOMOLOGACION
+        CANCELACION_ASIGNATURAS
+        SOLICITUD_CUPOS
+        CONSULTA_ACADEMICA
+    }
+
+    enum Prioridad {
+        ALTA
+        MEDIA
+        BAJA
+    }
+
+    enum CanalOrigen {
+        CSU
+        CORREO
+        SAC
+        TELEFONICO
+        PRESENCIAL
+    }
+
+    enum Rol {
+        ESTUDIANTE
+        COORDINADOR
+        DOCENTE
+    }
+
+    enum AccionHistorial {
+        REGISTRAR_SOLICITUD
+        CLASIFICAR_SOLICITUD
+        PRIORIZAR_SOLICITUD
+        ASIGNAR_RESPONSABLE
+        MARCAR_ATENDIDA
+        CERRAR_SOLICITUD
+    }
+}
+
+' ============ RELACIONES ============
+
+Solicitud --> SolicitudId
+Solicitud --> UsuarioReferencia
+Solicitud --> CanalOrigen
+Solicitud --> DescripcionSolicitud
+Solicitud --> TipoSolicitud
+Solicitud --> Prioridad
+Solicitud --> JustificacionPrioridad
+Solicitud --> EstadoSolicitud
+EntradaHistorial --> AccionHistorial
+EntradaHistorial --> UsuarioReferencia
+
+Usuario --> IdentificacionUsuario
+Usuario --> Rol
+Usuario --> Email
+
+@enduml
