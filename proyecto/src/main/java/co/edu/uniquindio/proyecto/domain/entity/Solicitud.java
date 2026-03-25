@@ -1,10 +1,8 @@
 package co.edu.uniquindio.proyecto.domain.entity;
 
-import co.edu.uniquindio.proyecto.domain.exception.BusinessRuleViolation;
 import co.edu.uniquindio.proyecto.domain.exception.DomainException;
 import co.edu.uniquindio.proyecto.domain.valueObject.*;
 import co.edu.uniquindio.proyecto.domain.valueObject.enums.*;
-
 
 import java.time.Instant;
 import java.util.ArrayList;
@@ -16,23 +14,24 @@ import java.util.UUID;
  * Es la raíz del agregado de Solicitud.
  * 
  * Ciclo de vida de una solicitud:
- + 1. REGISTRADA - Cuando se crea la solicitud
- + 2. CLASIFICADA - Cuando el coordinador define el tipo
- + 3. EN_ATENCION - Cuando hay un docente responsable asignado
- + 4. ATENDIDA - Cuando el docente marca como atendida
- + 5. CERRADA - Cuando se completa el proceso
+ * 1. REGISTRADA - Cuando se crea la solicitud
+ * 2. CLASIFICADA - Cuando el coordinador define el tipo
+ * 3. EN_ATENCION - Cuando hay un docente responsable asignado
+ * 4. ATENDIDA - Cuando el docente marca como atendida
+ * 5. CERRADA - Cuando se completa el proceso
+ * 
+ * NOTA: Las validaciones de reglas de negocio están en el Domain Service.
+ * Esta clase SOLO ejecuta las operaciones.
  */
 public class Solicitud {
 
     private final SolicitudId id;
-
     private final UsuarioReferencia solicitante;
     private final CanalOrigen canalOrigen;
     private final Instant fechaRegistro;
 
     private TipoSolicitud tipoSolicitud;
     private DescripcionSolicitud descripcion;
-
     private Prioridad prioridad;
     private JustificacionPrioridad justificacionPrioridad;
 
@@ -58,18 +57,11 @@ public class Solicitud {
         this.canalOrigen = canalOrigen;
         this.fechaRegistro = fechaRegistro;
         this.descripcion = descripcion;
-
         this.estado = EstadoSolicitud.REGISTRADA;
+
         registrarHistorial(AccionHistorial.REGISTRAR_SOLICITUD, solicitante, "Solicitud registrada");
     }
 
-    /**
-     * Factory method para crear una nueva solicitud.
-     + solicitante Referencia del usuario que crea la solicitud
-     + canalOrigen Canal por el cual se recibió la solicitud
-     + descripcion Descripción de la solicitud
-     + Nueva instancia de Solicitud
-     */
     public static Solicitud crear(UsuarioReferencia solicitante, CanalOrigen canalOrigen, DescripcionSolicitud descripcion) {
         return new Solicitud(
                 SolicitudId.newId(),
@@ -82,14 +74,9 @@ public class Solicitud {
 
     /**
      * Clasifica la solicitud con un tipo específico.
-     * Solo aplicable cuando la solicitud está en estado REGISTRADA.
-     + tipo Tipo de solicitud (QUEJA, RECLAMO, SUGERENCIA, SOLICITUD)
-     + coordinador Usuario que realiza la clasificación
+     * Validación de estado: SOLO la Solicitud conoce su estado interno.
      */
     public void clasificar(TipoSolicitud tipo, UsuarioReferencia coordinador) {
-        asegurarNoCerrada();
-        if (estado != EstadoSolicitud.REGISTRADA)
-            throw new BusinessRuleViolation("Solo se puede clasificar una solicitud en estado REGISTRADA");
         if (tipo == null) throw new DomainException("TipoSolicitud es obligatorio");
         if (coordinador == null) throw new DomainException("Coordinador es obligatorio");
 
@@ -100,15 +87,8 @@ public class Solicitud {
 
     /**
      * Asigna una prioridad a la solicitud.
-     * Solo aplicable cuando la solicitud está en estado CLASIFICADA.
-     * prioridad Prioridad asignada (ALTA, MEDIA, BAJA)
-     * justificacion Justificación de la prioridad
-     * coordinador Usuario que asigna la prioridad
      */
     public void priorizar(Prioridad prioridad, JustificacionPrioridad justificacion, UsuarioReferencia coordinador) {
-        asegurarNoCerrada();
-        if (estado != EstadoSolicitud.CLASIFICADA)
-            throw new BusinessRuleViolation("Solo se puede priorizar una solicitud en estado CLASIFICADA");
         if (prioridad == null) throw new DomainException("Prioridad es obligatoria");
         if (justificacion == null) throw new DomainException("Justificación es obligatoria");
         if (coordinador == null) throw new DomainException("Coordinador es obligatorio");
@@ -119,64 +99,37 @@ public class Solicitud {
     }
 
     /**
-     * Asigna un docente como responsable de atender la solicitud.
-     * Solo aplicable cuando la solicitud está en estado CLASIFICADA.
-     * responsable Usuario docente responsable
-     * coordinador Usuario que realiza la asignación
+     * Asigna un docente como responsable.
+     * Las validaciones de negocio (activo, rol) están en el Domain Service.
      */
-    public void asignarResponsable(Usuario responsable, UsuarioReferencia coordinador) {
-        asegurarNoCerrada();
-        if (responsable == null) throw new DomainException("Responsable es obligatorio");
-        if (!responsable.activo())
-            throw new BusinessRuleViolation("No se puede asignar un responsable inactivo");
+    public void asignarResponsable(UsuarioReferencia responsableRef, UsuarioReferencia coordinador) {
+        if (responsableRef == null) throw new DomainException("Responsable es obligatorio");
+        if (coordinador == null) throw new DomainException("Coordinador es obligatorio");
 
-        if (estado != EstadoSolicitud.CLASIFICADA)
-            throw new BusinessRuleViolation("Solo se puede asignar responsable en estado CLASIFICADA");
-
-        this.responsable = new UsuarioReferencia(responsable.id().value(), responsable.nombre());
+        this.responsable = responsableRef;
         this.estado = EstadoSolicitud.EN_ATENCION;
-        registrarHistorial(AccionHistorial.ASIGNAR_RESPONSABLE, coordinador, "Responsable: " + responsable.nombre());
+        registrarHistorial(AccionHistorial.ASIGNAR_RESPONSABLE, coordinador, "Responsable: " + responsableRef.nombre());
     }
 
     /**
-     * Marca la solicitud como atendida por el responsable asignado.
-     * Solo aplicable cuando la solicitud está en estado EN_ATENCION.
-     + responsable Usuario que marca como atendida
-     + observacion Observación de la atención
+     * Marca la solicitud como atendida.
      */
-    public void marcarAtendida(UsuarioReferencia responsable, String observacion) {
-        asegurarNoCerrada();
-        if (estado != EstadoSolicitud.EN_ATENCION)
-            throw new BusinessRuleViolation("Solo se puede atender una solicitud en estado EN_ATENCION");
-        if (this.responsable == null)
-            throw new BusinessRuleViolation("No se puede atender sin responsable asignado");
-        if (!this.responsable.equals(responsable))
-            throw new BusinessRuleViolation("Solo el responsable asignado puede marcar como atendida");
+    public void marcarAtendida(UsuarioReferencia responsableRef, String observacion) {
+        if (responsableRef == null) throw new DomainException("Responsable es obligatorio");
 
         this.estado = EstadoSolicitud.ATENDIDA;
-        registrarHistorial(AccionHistorial.MARCAR_ATENDIDA, responsable, observacion == null ? "Atendida" : observacion);
+        registrarHistorial(AccionHistorial.MARCAR_ATENDIDA, responsableRef, observacion == null ? "Atendida" : observacion);
     }
 
     /**
      * Cierra la solicitud con una observación final.
-     * Solo aplicable cuando la solicitud está en estado ATENDIDA.
-     * responsable Usuario que cierra la solicitud
-     * observacionCierre Observación de cierre
      */
     public void cerrar(UsuarioReferencia responsable, String observacionCierre) {
-        asegurarNoCerrada();
-        if (estado != EstadoSolicitud.ATENDIDA)
-            throw new BusinessRuleViolation("Solo se puede cerrar una solicitud que haya sido ATENDIDA");
         if (observacionCierre == null || observacionCierre.isBlank())
-            throw new BusinessRuleViolation("Para cerrar se requiere observación de cierre");
+            throw new DomainException("Observación de cierre es obligatoria");
 
         this.estado = EstadoSolicitud.CERRADA;
         registrarHistorial(AccionHistorial.CERRAR_SOLICITUD, responsable, observacionCierre);
-    }
-
-    private void asegurarNoCerrada() {
-        if (estado == EstadoSolicitud.CERRADA)
-            throw new BusinessRuleViolation("Una solicitud CERRADA no puede modificarse");
     }
 
     private void registrarHistorial(AccionHistorial accion, UsuarioReferencia usuario, String observacion) {
@@ -189,6 +142,7 @@ public class Solicitud {
         ));
     }
 
+    // Getters
     public SolicitudId id() { return id; }
     public UsuarioReferencia solicitante() { return solicitante; }
     public CanalOrigen canalOrigen() { return canalOrigen; }

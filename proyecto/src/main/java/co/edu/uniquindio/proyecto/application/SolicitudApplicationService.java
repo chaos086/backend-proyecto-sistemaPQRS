@@ -54,8 +54,9 @@ public class SolicitudApplicationService {
 
     public Solicitud clasificarSolicitud(UUID solicitudId, TipoSolicitud tipo, UUID coordinadorId) {
         Solicitud solicitud = obtenerSolicitud(solicitudId);
-        UsuarioReferencia coordinador = obtenerReferenciaUsuario(coordinadorId);
+        domainService.validarClasificar(solicitud);
         
+        UsuarioReferencia coordinador = obtenerReferenciaUsuario(coordinadorId);
         solicitud.clasificar(tipo, coordinador);
         return solicitudRepository.save(solicitud);
     }
@@ -63,8 +64,9 @@ public class SolicitudApplicationService {
     public Solicitud priorizarSolicitud(UUID solicitudId, Prioridad prioridad, 
                                         String justificacion, UUID coordinadorId) {
         Solicitud solicitud = obtenerSolicitud(solicitudId);
-        UsuarioReferencia coordinador = obtenerReferenciaUsuario(coordinadorId);
+        domainService.validarPriorizar(solicitud);
         
+        UsuarioReferencia coordinador = obtenerReferenciaUsuario(coordinadorId);
         JustificacionPrioridad justificacionVO = new JustificacionPrioridad(justificacion);
         solicitud.priorizar(prioridad, justificacionVO, coordinador);
         return solicitudRepository.save(solicitud);
@@ -78,10 +80,11 @@ public class SolicitudApplicationService {
                 .orElseThrow(() -> new DomainException("Responsable no encontrado"));
         
         List<Solicitud> solicitudesExistentes = solicitudRepository.findAll();
-        domainService.validarAsignarResponsable(responsable, solicitudesExistentes);
+        domainService.validarAsignarResponsable(solicitud, responsable, solicitudesExistentes);
         
         UsuarioReferencia coordinador = obtenerReferenciaUsuario(coordinadorId);
-        solicitud.asignarResponsable(responsable, coordinador);
+        UsuarioReferencia responsableRef = new UsuarioReferencia(responsable.id().value(), responsable.nombre());
+        solicitud.asignarResponsable(responsableRef, coordinador);
         return solicitudRepository.save(solicitud);
     }
 
@@ -89,14 +92,16 @@ public class SolicitudApplicationService {
         Solicitud solicitud = obtenerSolicitud(solicitudId);
         UsuarioReferencia responsable = obtenerReferenciaUsuario(responsableId);
         
+        domainService.validarMarcarAtendida(solicitud, responsable);
         solicitud.marcarAtendida(responsable, observacion);
         return solicitudRepository.save(solicitud);
     }
 
     public Solicitud cerrarSolicitud(UUID solicitudId, UUID responsableId, String observacionCierre) {
         Solicitud solicitud = obtenerSolicitud(solicitudId);
-        UsuarioReferencia responsable = obtenerReferenciaUsuario(responsableId);
+        domainService.validarCerrar(solicitud);
         
+        UsuarioReferencia responsable = obtenerReferenciaUsuario(responsableId);
         solicitud.cerrar(responsable, observacionCierre);
         return solicitudRepository.save(solicitud);
     }

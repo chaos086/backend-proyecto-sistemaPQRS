@@ -3,6 +3,7 @@ package co.edu.uniquindio.proyecto.domain.service;
 import co.edu.uniquindio.proyecto.domain.entity.Solicitud;
 import co.edu.uniquindio.proyecto.domain.entity.Usuario;
 import co.edu.uniquindio.proyecto.domain.exception.BusinessRuleViolation;
+import co.edu.uniquindio.proyecto.domain.valueObject.UsuarioReferencia;
 import co.edu.uniquindio.proyecto.domain.valueObject.enums.EstadoSolicitud;
 import co.edu.uniquindio.proyecto.domain.valueObject.enums.Rol;
 import java.util.List;
@@ -10,27 +11,18 @@ import java.util.List;
 /**
  * Domain Service que encapsula las reglas de negocio del sistema de PQRS.
  * 
- * Reglas de negocio implementadas (según Guía Maestra):
- * - Un solicitante no puede tener más de 5 solicitudes pendientes
- * - Un docente no puede tener más de 10 solicitudes en atención simultáneamente
- * - Solo usuarios activos pueden crear o atender solicitudes
- * - Solo docentes pueden ser asignados como responsables
+ * Principio DDD: Este servicio SOLO valida reglas de negocio.
+ * Las operaciones las ejecutan las entidades (Solicitud).
  */
 public class SolicitudDomainService {
 
-    /** Máximo de solicitudes pendientes que puede tener un solicitante */
     private static final int MAX_SOLICITUDES_PENDIENTES_POR_SOLICITANTE = 5;
-    
-    /** Máximo de solicitudes en atención que puede tener un docente */
     private static final int MAX_SOLICITUDES_EN_ATENCION_POR_DOCENTE = 10;
+
+    // ==================== VALIDACIONES DE CREAR SOLICITUD ====================
 
     /**
      * Valida que un solicitante pueda crear una nueva solicitud.
-     * Verifica que el usuario esté activo y no exceda el límite de solicitudes pendientes.
-     * 
-     * @param solicitante Usuario que desea crear la solicitud
-     * @param solicitudesExistentes Lista de todas las solicitudes en el sistema
-     * @throws BusinessRuleViolation si el solicitante no puede crear más solicitudes
      */
     public void validarCrearSolicitud(Usuario solicitante, List<Solicitud> solicitudesExistentes) {
         if (solicitante == null) {
@@ -53,17 +45,51 @@ public class SolicitudDomainService {
         }
     }
 
+    // ==================== VALIDACIONES DE CLASIFICAR ====================
+
+    /**
+     * Valida que la solicitud pueda ser clasificada.
+     * Debe estar en estado REGISTRADA.
+     */
+    public void validarClasificar(Solicitud solicitud) {
+        if (solicitud == null) {
+            throw new BusinessRuleViolation("La solicitud no puede ser null");
+        }
+        if (solicitud.estado() != EstadoSolicitud.REGISTRADA) {
+            throw new BusinessRuleViolation("Solo se puede clasificar una solicitud en estado REGISTRADA");
+        }
+    }
+
+    // ==================== VALIDACIONES DE PRIORIZAR ====================
+
+    /**
+     * Valida que la solicitud pueda ser priorizada.
+     * Debe estar en estado CLASIFICADA.
+     */
+    public void validarPriorizar(Solicitud solicitud) {
+        if (solicitud == null) {
+            throw new BusinessRuleViolation("La solicitud no puede ser null");
+        }
+        if (solicitud.estado() != EstadoSolicitud.CLASIFICADA) {
+            throw new BusinessRuleViolation("Solo se puede priorizar una solicitud en estado CLASIFICADA");
+        }
+    }
+
+    // ==================== VALIDACIONES DE ASIGNAR RESPONSABLE ====================
+
     /**
      * Valida que se pueda asignar un responsable a una solicitud.
-     * Verifica que el responsable sea un docente activo y no exceda su límite de atención.
-     * 
-     * @param responsable Usuario que será asignado como responsable
-     * @param solicitudesExistentes Lista de todas las solicitudes en el sistema
-     * @throws BusinessRuleViolation si el responsable no puede ser asignado
+     * Verifica: estado de solicitud, que el docente esté activo, rol DOCENTE, y límite de solicitudes.
      */
-    public void validarAsignarResponsable(Usuario responsable, List<Solicitud> solicitudesExistentes) {
+    public void validarAsignarResponsable(Solicitud solicitud, Usuario responsable, List<Solicitud> solicitudesExistentes) {
+        if (solicitud == null) {
+            throw new BusinessRuleViolation("La solicitud no puede ser null");
+        }
         if (responsable == null) {
             throw new BusinessRuleViolation("El responsable no puede ser null");
+        }
+        if (solicitud.estado() != EstadoSolicitud.CLASIFICADA) {
+            throw new BusinessRuleViolation("Solo se puede asignar responsable en estado CLASIFICADA");
         }
         if (!responsable.activo()) {
             throw new BusinessRuleViolation("El responsable debe estar activo");
@@ -84,15 +110,42 @@ public class SolicitudDomainService {
         }
     }
 
+    // ==================== VALIDACIONES DE MARCAR ATENDIDA ====================
+
     /**
-     * Valida que los estados de transición no sean nulos.
-     * @param estadoActual Estado actual de la solicitud
-     * @param estadoNuevo Estado al que se desea transicionar
-     * @throws BusinessRuleViolation si algún estado es null
+     * Valida que la solicitud pueda ser marcada como atendida.
+     * Verifica: estado EN_ATENCION y que el responsable sea el mismo.
      */
-    public void validarTransicionEstado(EstadoSolicitud estadoActual, EstadoSolicitud estadoNuevo) {
-        if (estadoActual == null || estadoNuevo == null) {
-            throw new BusinessRuleViolation("Los estados no pueden ser null");
+    public void validarMarcarAtendida(Solicitud solicitud, UsuarioReferencia responsable) {
+        if (solicitud == null) {
+            throw new BusinessRuleViolation("La solicitud no puede ser null");
+        }
+        if (responsable == null) {
+            throw new BusinessRuleViolation("El responsable no puede ser null");
+        }
+        if (solicitud.estado() != EstadoSolicitud.EN_ATENCION) {
+            throw new BusinessRuleViolation("Solo se puede atender una solicitud en estado EN_ATENCION");
+        }
+        if (solicitud.responsable() == null) {
+            throw new BusinessRuleViolation("No se puede atender sin responsable asignado");
+        }
+        if (!solicitud.responsable().equals(responsable)) {
+            throw new BusinessRuleViolation("Solo el responsable asignado puede marcar como atendida");
+        }
+    }
+
+    // ==================== VALIDACIONES DE CERRAR ====================
+
+    /**
+     * Valida que la solicitud pueda ser cerrada.
+     * Debe estar en estado ATENDIDA.
+     */
+    public void validarCerrar(Solicitud solicitud) {
+        if (solicitud == null) {
+            throw new BusinessRuleViolation("La solicitud no puede ser null");
+        }
+        if (solicitud.estado() != EstadoSolicitud.ATENDIDA) {
+            throw new BusinessRuleViolation("Solo se puede cerrar una solicitud que haya sido ATENDIDA");
         }
     }
 }
