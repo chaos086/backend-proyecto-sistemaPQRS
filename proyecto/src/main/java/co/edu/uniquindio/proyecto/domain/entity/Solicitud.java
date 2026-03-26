@@ -1,32 +1,27 @@
 package co.edu.uniquindio.proyecto.domain.entity;
 
+import co.edu.uniquindio.proyecto.domain.exception.BusinessRuleViolation;
 import co.edu.uniquindio.proyecto.domain.exception.DomainException;
-import co.edu.uniquindio.proyecto.domain.valueObject.*;
-import co.edu.uniquindio.proyecto.domain.valueObject.enums.*;
+import co.edu.uniquindio.proyecto.domain.service.HistorialService;
+import co.edu.uniquindio.proyecto.domain.valueobject.SolicitudId;
+import co.edu.uniquindio.proyecto.domain.valueobject.enums.AccionHistorial;
+import co.edu.uniquindio.proyecto.domain.valueobject.enums.CanalOrigen;
+import co.edu.uniquindio.proyecto.domain.valueobject.enums.EstadoSolicitud;
+import co.edu.uniquindio.proyecto.domain.valueobject.enums.Prioridad;
+import co.edu.uniquindio.proyecto.domain.valueobject.enums.TipoSolicitud;
+import co.edu.uniquindio.proyecto.domain.valueobject.DescripcionSolicitud;
+import co.edu.uniquindio.proyecto.domain.valueobject.JustificacionPrioridad;
 
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-/**
- * Entidad que representa una solicitud (PQR) en el sistema.
- * Es la raíz del agregado de Solicitud.
- * 
- * Ciclo de vida de una solicitud:
- * 1. REGISTRADA - Cuando se crea la solicitud
- * 2. CLASIFICADA - Cuando el coordinador define el tipo
- * 3. EN_ATENCION - Cuando hay un docente responsable asignado
- * 4. ATENDIDA - Cuando el docente marca como atendida
- * 5. CERRADA - Cuando se completa el proceso
- * 
- * NOTA: Las validaciones de reglas de negocio están en el Domain Service.
- * Esta clase SOLO ejecuta las operaciones.
- */
 public class Solicitud {
 
     private final SolicitudId id;
-    private final UsuarioReferencia solicitante;
+    private final UUID solicitanteId;
+    private final String nombreSolicitante;
     private final CanalOrigen canalOrigen;
     private final Instant fechaRegistro;
 
@@ -36,115 +31,115 @@ public class Solicitud {
     private JustificacionPrioridad justificacionPrioridad;
 
     private EstadoSolicitud estado;
-    private UsuarioReferencia responsable;
+    private UUID responsableId;
+    private String nombreResponsable;
 
     private final List<EntradaHistorial> historial = new ArrayList<>();
+    private final HistorialService historialService;
 
     public Solicitud(SolicitudId id,
-                     UsuarioReferencia solicitante,
+                     UUID solicitanteId,
+                     String nombreSolicitante,
                      CanalOrigen canalOrigen,
-                     Instant fechaRegistro,
-                     DescripcionSolicitud descripcion) {
+                     DescripcionSolicitud descripcion,
+                     HistorialService historialService) {
 
         if (id == null) throw new DomainException("Solicitud.id es obligatorio");
-        if (solicitante == null) throw new DomainException("Solicitud.solicitante es obligatorio");
+        if (solicitanteId == null) throw new DomainException("Solicitud.solicitanteId es obligatorio");
+        if (nombreSolicitante == null || nombreSolicitante.isBlank()) throw new DomainException("Solicitud.nombreSolicitante es obligatorio");
         if (canalOrigen == null) throw new DomainException("Solicitud.canalOrigen es obligatorio");
-        if (fechaRegistro == null) throw new DomainException("Solicitud.fechaRegistro es obligatorio");
         if (descripcion == null) throw new DomainException("Solicitud.descripcion es obligatoria");
+        if (historialService == null) throw new DomainException("Solicitud.historialService es obligatorio");
 
         this.id = id;
-        this.solicitante = solicitante;
+        this.solicitanteId = solicitanteId;
+        this.nombreSolicitante = nombreSolicitante;
         this.canalOrigen = canalOrigen;
-        this.fechaRegistro = fechaRegistro;
+        this.fechaRegistro = Instant.now();
         this.descripcion = descripcion;
         this.estado = EstadoSolicitud.REGISTRADA;
+        this.historialService = historialService;
 
-        registrarHistorial(AccionHistorial.REGISTRAR_SOLICITUD, solicitante, "Solicitud registrada");
+        registrarHistorial(AccionHistorial.REGISTRAR_SOLICITUD, solicitanteId, nombreSolicitante, "Solicitud registrada");
     }
 
-    public static Solicitud crear(UsuarioReferencia solicitante, CanalOrigen canalOrigen, DescripcionSolicitud descripcion) {
+    public static Solicitud crear(UUID solicitanteId, String nombreSolicitante, CanalOrigen canalOrigen, DescripcionSolicitud descripcion, HistorialService historialService) {
         return new Solicitud(
                 SolicitudId.newId(),
-                solicitante,
+                solicitanteId,
+                nombreSolicitante,
                 canalOrigen,
-                Instant.now(),
-                descripcion
+                descripcion,
+                historialService
         );
     }
 
-    /**
-     * Clasifica la solicitud con un tipo específico.
-     * Validación de estado: SOLO la Solicitud conoce su estado interno.
-     */
-    public void clasificar(TipoSolicitud tipo, UsuarioReferencia coordinador) {
+    public void clasificar(TipoSolicitud tipo, UUID coordinadorId, String nombreCoordinador) {
         if (tipo == null) throw new DomainException("TipoSolicitud es obligatorio");
-        if (coordinador == null) throw new DomainException("Coordinador es obligatorio");
+        if (coordinadorId == null) throw new DomainException("CoordinadorId es obligatorio");
+        if (nombreCoordinador == null || nombreCoordinador.isBlank()) throw new DomainException("Nombre del coordinador es obligatorio");
+
+        if (this.estado != EstadoSolicitud.REGISTRADA) {
+            throw new BusinessRuleViolation("Solo se puede clasificar una solicitud en estado REGISTRADA");
+        }
 
         this.tipoSolicitud = tipo;
         this.estado = EstadoSolicitud.CLASIFICADA;
-        registrarHistorial(AccionHistorial.CLASIFICAR_SOLICITUD, coordinador, "Tipo: " + tipo);
+        registrarHistorial(AccionHistorial.CLASIFICAR_SOLICITUD, coordinadorId, nombreCoordinador, "Tipo: " + tipo);
     }
 
-    /**
-     * Asigna una prioridad a la solicitud.
-     */
-    public void priorizar(Prioridad prioridad, JustificacionPrioridad justificacion, UsuarioReferencia coordinador) {
+    public void priorizar(Prioridad prioridad, JustificacionPrioridad justificacion, UUID coordinadorId, String nombreCoordinador) {
         if (prioridad == null) throw new DomainException("Prioridad es obligatoria");
         if (justificacion == null) throw new DomainException("Justificación es obligatoria");
-        if (coordinador == null) throw new DomainException("Coordinador es obligatorio");
+        if (coordinadorId == null) throw new DomainException("CoordinadorId es obligatorio");
+        if (nombreCoordinador == null || nombreCoordinador.isBlank()) throw new DomainException("Nombre del coordinador es obligatorio");
 
         this.prioridad = prioridad;
         this.justificacionPrioridad = justificacion;
-        registrarHistorial(AccionHistorial.PRIORIZAR_SOLICITUD, coordinador, "Prioridad: " + prioridad);
+        registrarHistorial(AccionHistorial.PRIORIZAR_SOLICITUD, coordinadorId, nombreCoordinador, "Prioridad: " + prioridad);
     }
 
-    /**
-     * Asigna un docente como responsable.
-     * Las validaciones de negocio (activo, rol) están en el Domain Service.
-     */
-    public void asignarResponsable(UsuarioReferencia responsableRef, UsuarioReferencia coordinador) {
-        if (responsableRef == null) throw new DomainException("Responsable es obligatorio");
-        if (coordinador == null) throw new DomainException("Coordinador es obligatorio");
+    public void asignarResponsable(UUID responsableId, String nombreResponsable, UUID coordinadorId, String nombreCoordinador) {
+        if (responsableId == null) throw new DomainException("ResponsableId es obligatorio");
+        if (nombreResponsable == null || nombreResponsable.isBlank()) throw new DomainException("Nombre del responsable es obligatorio");
+        if (coordinadorId == null) throw new DomainException("CoordinadorId es obligatorio");
+        if (nombreCoordinador == null || nombreCoordinador.isBlank()) throw new DomainException("Nombre del coordinador es obligatorio");
 
-        this.responsable = responsableRef;
+        this.responsableId = responsableId;
+        this.nombreResponsable = nombreResponsable;
         this.estado = EstadoSolicitud.EN_ATENCION;
-        registrarHistorial(AccionHistorial.ASIGNAR_RESPONSABLE, coordinador, "Responsable: " + responsableRef.nombre());
+        registrarHistorial(AccionHistorial.ASIGNAR_RESPONSABLE, coordinadorId, nombreCoordinador, "Responsable: " + nombreResponsable);
     }
 
-    /**
-     * Marca la solicitud como atendida.
-     */
-    public void marcarAtendida(UsuarioReferencia responsableRef, String observacion) {
-        if (responsableRef == null) throw new DomainException("Responsable es obligatorio");
+    public void marcarAtendida(UUID responsableId, String nombreResponsable, String observacion) {
+        if (responsableId == null) throw new DomainException("ResponsableId es obligatorio");
+        if (nombreResponsable == null || nombreResponsable.isBlank()) throw new DomainException("Nombre del responsable es obligatorio");
 
         this.estado = EstadoSolicitud.ATENDIDA;
-        registrarHistorial(AccionHistorial.MARCAR_ATENDIDA, responsableRef, observacion == null ? "Atendida" : observacion);
+        registrarHistorial(AccionHistorial.MARCAR_ATENDIDA, responsableId, nombreResponsable, observacion == null ? "Atendida" : observacion);
     }
 
-    /**
-     * Cierra la solicitud con una observación final.
-     */
-    public void cerrar(UsuarioReferencia responsable, String observacionCierre) {
+    public void cerrar(UUID responsableId, String nombreResponsable, String observacionCierre) {
+        if (responsableId == null) throw new DomainException("ResponsableId es obligatorio");
+        if (nombreResponsable == null || nombreResponsable.isBlank()) throw new DomainException("Nombre del responsable es obligatorio");
         if (observacionCierre == null || observacionCierre.isBlank())
             throw new DomainException("Observación de cierre es obligatoria");
 
         this.estado = EstadoSolicitud.CERRADA;
-        registrarHistorial(AccionHistorial.CERRAR_SOLICITUD, responsable, observacionCierre);
+        registrarHistorial(AccionHistorial.CERRAR_SOLICITUD, responsableId, nombreResponsable, observacionCierre);
     }
 
-    private void registrarHistorial(AccionHistorial accion, UsuarioReferencia usuario, String observacion) {
-        historial.add(new EntradaHistorial(
-                UUID.randomUUID(),
-                Instant.now(),
-                accion,
-                usuario,
-                observacion
-        ));
+    private void registrarHistorial(AccionHistorial accion, UUID usuarioId, String nombreUsuario, String observacion) {
+        List<EntradaHistorial> historialActualizado = historialService.registrarAccion(
+            historial, accion, usuarioId, nombreUsuario, observacion
+        );
+        this.historial.clear();
+        this.historial.addAll(historialActualizado);
     }
 
-    // Getters
     public SolicitudId id() { return id; }
-    public UsuarioReferencia solicitante() { return solicitante; }
+    public UUID solicitanteId() { return solicitanteId; }
+    public String nombreSolicitante() { return nombreSolicitante; }
     public CanalOrigen canalOrigen() { return canalOrigen; }
     public Instant fechaRegistro() { return fechaRegistro; }
     public TipoSolicitud tipoSolicitud() { return tipoSolicitud; }
@@ -152,6 +147,7 @@ public class Solicitud {
     public Prioridad prioridad() { return prioridad; }
     public JustificacionPrioridad justificacionPrioridad() { return justificacionPrioridad; }
     public EstadoSolicitud estado() { return estado; }
-    public UsuarioReferencia responsable() { return responsable; }
+    public UUID responsableId() { return responsableId; }
+    public String nombreResponsable() { return nombreResponsable; }
     public List<EntradaHistorial> historial() { return List.copyOf(historial); }
 }

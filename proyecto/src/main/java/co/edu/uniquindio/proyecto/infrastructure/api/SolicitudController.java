@@ -2,9 +2,9 @@ package co.edu.uniquindio.proyecto.infrastructure.api;
 
 import co.edu.uniquindio.proyecto.application.SolicitudApplicationService;
 import co.edu.uniquindio.proyecto.domain.entity.Solicitud;
-import co.edu.uniquindio.proyecto.domain.valueObject.enums.CanalOrigen;
-import co.edu.uniquindio.proyecto.domain.valueObject.enums.Prioridad;
-import co.edu.uniquindio.proyecto.domain.valueObject.enums.TipoSolicitud;
+import co.edu.uniquindio.proyecto.domain.valueobject.enums.CanalOrigen;
+import co.edu.uniquindio.proyecto.domain.valueobject.enums.Prioridad;
+import co.edu.uniquindio.proyecto.domain.valueobject.enums.TipoSolicitud;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 

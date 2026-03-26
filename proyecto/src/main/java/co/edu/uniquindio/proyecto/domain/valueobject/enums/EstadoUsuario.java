@@ -1,7 +1,6 @@
 package co.edu.uniquindio.proyecto.domain.valueobject.enums;
 
-public enum Prioridad {
-    BAJA,
-    MEDIA,
-    ALTA
+public enum EstadoUsuario {
+    ACTIVO,
+    INACTIVO
 }

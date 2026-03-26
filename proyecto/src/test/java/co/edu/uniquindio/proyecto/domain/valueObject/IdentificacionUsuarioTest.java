@@ -1,23 +1,49 @@
-package co.edu.uniquindio.proyecto.domain.valueObject;
+package co.edu.uniquindio.proyecto.domain.valueobject;
 
+import co.edu.uniquindio.proyecto.domain.exception.DomainException;
 import org.junit.jupiter.api.Test;
+
+import java.util.UUID;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 class IdentificacionUsuarioTest {
 
-    /**
-     * Verifica que se genere correctamente un identificador de usuario.
-     *
-     * GIVEN: la solicitud de crear un nuevo identificador de usuario
-     * WHEN: se invoca el método newId() de IdentificacionUsuario
-     * THEN:
-     *  - se obtiene una instancia válida de IdentificacionUsuario
-     *  - el valor interno del identificador no es nulo
-     */
     @Test
-    void nuevoIdNoEsNull() {
+    void crearIdentificacionValida() {
+        IdentificacionUsuario id = IdentificacionUsuario.of("1098765432");
+        assertNotNull(id);
+        assertEquals("1098765432", id.valor());
+    }
+
+    @Test
+    void crearIdentificacionNulaDebeLanzarExcepcion() {
+        assertThrows(DomainException.class, () -> IdentificacionUsuario.of((String) null));
+    }
+
+    @Test
+    void crearIdentificacionVaciaDebeLanzarExcepcion() {
+        assertThrows(DomainException.class, () -> IdentificacionUsuario.of(""));
+    }
+
+    @Test
+    void crearIdentificacionEnBlancoDebeLanzarExcepcion() {
+        assertThrows(DomainException.class, () -> IdentificacionUsuario.of("   "));
+    }
+
+    @Test
+    void crearIdentificacionNewId() {
         IdentificacionUsuario id = IdentificacionUsuario.newId();
         assertNotNull(id);
-        assertNotNull(id.value());
+        assertNotNull(id.valor());
+        assertTrue(id.valor().length() > 0);
+    }
+
+    @Test
+    void crearIdentificacionFromUUID() {
+        UUID uuid = UUID.randomUUID();
+        IdentificacionUsuario id = IdentificacionUsuario.of(uuid);
+        assertNotNull(id);
+        assertEquals(uuid.toString(), id.valor());
     }
 }

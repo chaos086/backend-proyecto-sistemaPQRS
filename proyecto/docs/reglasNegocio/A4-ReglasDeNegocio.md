@@ -70,37 +70,37 @@ public void validarCrearSolicitud(Usuario solicitante, List<Solicitud> solicitud
 
 ---
 
-### Regla 2: Límite de Solicitudes en Atención por Docente
+### Regla 2: Límite de Solicitudes en Atención por Profesor
 
 | Aspecto | Detalle |
-|---------|----------|
-| **Acción que regula** | Asignar responsable (docente) a una solicitud |
-| **Condición** | El docente debe estar activo, tener rol DOCENTE, y no puede tener más de 10 solicitudes en estado EN_ATENCION |
-| **Comportamiento** | Si el docente supera el límite, se lanza `BusinessRuleViolation` |
+|---------|---------|
+| **Acción que regula** | Asignar responsable (profesor) a una solicitud |
+| **Condición** | El profesor debe estar activo, tener rol PROFESOR, y no puede tener más de 10 solicitudes en estado EN_ATENCION |
+| **Comportamiento** | Si el profesor supera el límite, se lanza `DomainException` |
 | **Clase responsable** | `SolicitudDomainService` |
 | **Método** | `validarAsignarResponsable(Usuario responsable, List<Solicitud> solicitudesExistentes)` |
 
 **Código relevante:**
 ```java
 // En SolicitudDomainService.java
-private static final int MAX_SOLICITUDES_EN_ATENCION_POR_DOCENTE = 10;
+private static final int MAX_SOLICITUDES_EN_ATENCION_POR_PROFESOR = 10;
 
 public void validarAsignarResponsable(Usuario responsable, List<Solicitud> solicitudesExistentes) {
     if (!responsable.activo()) {
-        throw new BusinessRuleViolation("El responsable debe estar activo");
+        throw new DomainException("El responsable debe estar activo");
     }
-    if (responsable.rol() != Rol.DOCENTE) {
-        throw new BusinessRuleViolation("Solo un docente puede ser asignado como responsable");
+    if (responsable.rol() != Rol.PROFESOR) {
+        throw new DomainException("Solo un profesor puede ser asignado como responsable");
     }
 
     long solicitudesEnAtencion = solicitudesExistentes.stream()
-        .filter(s -> s.responsable() != null)
-        .filter(s -> s.responsable().value().equals(responsable.id().value()))
+        .filter(s -> s.responsableId() != null)
+        .filter(s -> s.responsableId().toString().equals(responsable.id().valor()))
         .filter(s -> s.estado() == EstadoSolicitud.EN_ATENCION)
         .count();
 
-    if (solicitudesEnAtencion >= MAX_SOLICITUDES_EN_ATENCION_POR_DOCENTE) {
-        throw new BusinessRuleViolation("Un docente no puede tener más de 10 solicitudes en atención");
+    if (solicitudesEnAtencion >= MAX_SOLICITUDES_EN_ATENCION_POR_PROFESOR) {
+        throw new DomainException("Un profesor no puede tener más de 10 solicitudes en atención");
     }
 }
 ```
@@ -110,48 +110,56 @@ public void validarAsignarResponsable(Usuario responsable, List<Solicitud> solic
 ### Regla 3: Solo Usuarios Activos Pueden Crear o Atender
 
 | Aspecto | Detalle |
-|---------|----------|
+|---------|---------|
 | **Acción que regula** | Crear solicitud, Atender solicitud |
-| **Condición** | El usuario (solicitante o responsable) debe tener el flag `activo = true` |
-| **Comportamiento** | Si el usuario está inactivo, se lanza `BusinessRuleViolation` |
+| **Condición** | El usuario (solicitante o responsable) debe tener estado `ACTIVO` (enum `EstadoUsuario`) |
+| **Comportamiento** | Si el usuario está inactivo, se lanza `DomainException` |
 | **Clases responsables** | `SolicitudDomainService`, `Solicitud` |
 | **Métodos** | `validarCrearSolicitud`, `asignarResponsable` |
+| **Enum** | `EstadoUsuario` (ACTIVO, INACTIVO) |
 
 **Código relevante:**
 ```java
+// Enum EstadoUsuario.java
+public enum EstadoUsuario {
+    ACTIVO,
+    INACTIVO
+}
+
 // En Solicitud.java - asignarResponsable()
-public void asignarResponsable(Usuario responsable, UsuarioReferencia coordinador) {
+public void asignarResponsable(UUID responsableId, String nombreResponsable, 
+                              UUID coordinadorId, String nombreCoordinador) {
     asegurarNoCerrada();
-    if (responsable == null) throw new DomainException("Responsable es obligatorio");
-    if (!responsable.activo())
-        throw new BusinessRuleViolation("No se puede asignar un responsable inactivo");
+    if (responsableId == null) throw new DomainException("Responsable es obligatorio");
 
     if (estado != EstadoSolicitud.CLASIFICADA)
-        throw new BusinessRuleViolation("Solo se puede asignar responsable en estado CLASIFICADA");
+        throw new DomainException("Solo se puede asignar responsable en estado CLASIFICADA");
 
-    this.responsable = new UsuarioReferencia(responsable.id().value(), responsable.nombre());
+    this.responsableId = responsableId;
+    this.nombreResponsable = nombreResponsable;
     this.estado = EstadoSolicitud.EN_ATENCION;
-    registrarHistorial(AccionHistorial.ASIGNAR_RESPONSABLE, coordinador, "Responsable: " + responsable.nombre());
+    historialService.registrarHistorial(this.id, AccionHistorial.ASIGNAR_RESPONSABLE, 
+        coordinadorId, nombreCoordinador, "Responsable: " + nombreResponsable);
 }
 ```
 
 ---
 
-### Regla 4: Solo Docentes Pueden Ser Responsables
+### Regla 4: Solo Profesores Pueden Ser Responsables
 
 | Aspecto | Detalle |
-|---------|----------|
+|---------|---------|
 | **Acción que regula** | Asignar responsable |
-| **Condición** | El usuario asignado debe tener rol DOCENTE |
-| **Comportamiento** | Si el usuario no es docente, se lanza `BusinessRuleViolation` |
+| **Condición** | El usuario asignado debe tener rol PROFESOR |
+| **Comportamiento** | Si el usuario no es profesor, se lanza `DomainException` |
 | **Clase responsable** | `SolicitudDomainService` |
 | **Método** | `validarAsignarResponsable` |
 
 **Código relevante:**
 ```java
 // En SolicitudDomainService.java
-if (responsable.rol() != Rol.DOCENTE) {
-    throw new BusinessRuleViolation("Solo un docente puede ser asignado como responsable");
+if (responsable.rol() != Rol.PROFESOR) {
+    throw new DomainException("Solo un profesor puede ser asignado como responsable");
 }
 ```
 
@@ -160,20 +168,20 @@ if (responsable.rol() != Rol.DOCENTE) {
 ### Regla 5: Transiciones de Estado Válidas
 
 | Aspecto | Detalle |
-|---------|----------|
+|---------|---------|
 | **Acción que regula** | Clasificar, Priorizar, Asignar Responsable, Atender, Cerrar |
 | **Condición** | Solo se puede ejecutar la acción si la solicitud está en el estado correcto |
-| **Comportamiento** | Si el estado no es el correcto, se lanza `BusinessRuleViolation` |
+| **Comportamiento** | Si el estado no es el correcto, se lanza `DomainException` |
 | **Clase responsable** | `Solicitud` |
 | **Métodos** | `clasificar()`, `priorizar()`, `asignarResponsable()`, `marcarAtendida()`, `cerrar()` |
 
 **Código relevante:**
 ```java
 // En Solicitud.java - clasificar()
-public void clasificar(TipoSolicitud tipo, UsuarioReferencia coordinador) {
+public void clasificar(TipoSolicitud tipo, UUID coordinadorId, String nombreCoordinador) {
     asegurarNoCerrada();
     if (estado != EstadoSolicitud.REGISTRADA)
-        throw new BusinessRuleViolation("Solo se puede clasificar una solicitud en estado REGISTRADA");
+        throw new DomainException("Solo se puede clasificar una solicitud en estado REGISTRADA");
     // ...
 }
 
@@ -189,10 +197,10 @@ public void clasificar(TipoSolicitud tipo, UsuarioReferencia coordinador) {
 ### Regla 6: No Modificar una Solicitud Cerrada
 
 | Aspecto | Detalle |
-|---------|----------|
+|---------|---------|
 | **Acción que regulate** | Cualquier modificación sobre una solicitud |
 | **Condición** | La solicitud no debe estar en estado CERRADA |
-| **Comportamiento** | Si está cerrada, se lanza `BusinessRuleViolation` |
+| **Comportamiento** | Si está cerrada, se lanza `DomainException` |
 | **Clase responsable** | `Solicitud` |
 | **Método** | `asegurarNoCerrada()` |
 
@@ -201,7 +209,7 @@ public void clasificar(TipoSolicitud tipo, UsuarioReferencia coordinador) {
 // En Solicitud.java
 private void asegurarNoCerrada() {
     if (estado == EstadoSolicitud.CERRADA)
-        throw new BusinessRuleViolation("Una solicitud CERRADA no puede modificarse");
+        throw new DomainException("Una solicitud CERRADA no puede modificarse");
 }
 ```
 
@@ -210,11 +218,11 @@ private void asegurarNoCerrada() {
 ### Regla 7: Registro de Historial (Auditoría)
 
 | Aspecto | Detalle |
-|---------|----------|
+|---------|---------|
 | **Acción que regula** | Todas las acciones relevantes |
 | **Condición** | Cada acción debe generar una entrada en el historial |
-| **Comportamiento** | Se crea un `EntradaHistorial` con fecha, acción, usuario y observación |
-| **Clases responsables** | `Solicitud`, `EntradaHistorial` |
+| **Comportamiento** | Se crea un `EntradaHistorial` (record) con ID, fecha, acción, usuario y observación |
+| **Clases responsables** | `HistorialService`, `EntradaHistorial` |
 | **Enum** | `AccionHistorial` |
 
 **Código relevante:**
@@ -226,23 +234,33 @@ public enum AccionHistorial {
     PRIORIZAR_SOLICITUD,
     ASIGNAR_RESPONSABLE,
     MARCAR_ATENDIDA,
-    CERRAR_SOLICITUD,
-    // Para IA (futuro)
-    SUGERENCIA_IA_GENERADA,
-    SUGERENCIA_IA_CONFIRMADA,
-    SUGERENCIA_IA_AJUSTADA,
-    RESUMEN_IA_GENERADO
+    CERRAR_SOLICITUD
 }
 
-// En Solicitud.java - registrarHistorial()
-private void registrarHistorial(AccionHistorial accion, UsuarioReferencia usuario, String observacion) {
-    historial.add(new EntradaHistorial(
-        UUID.randomUUID(),
-        Instant.now(),
-        accion,
-        usuario,
-        observacion
-    ));
+// EntradaHistorial es un record con ID
+public record EntradaHistorial(
+    String id,
+    Instant fecha,
+    AccionHistorial accion,
+    String usuarioId,
+    String nombreUsuario,
+    String observacion
+) {}
+
+// HistorialService.java - Servicio del dominio
+public class HistorialService {
+    public void registrarHistorial(SolicitudId solicitudId, AccionHistorial accion,
+                                   UUID usuarioId, String nombreUsuario, String observacion) {
+        EntradaHistorial entrada = new EntradaHistorial(
+            UUID.randomUUID().toString(),
+            Instant.now(),
+            accion,
+            usuarioId.toString(),
+            nombreUsuario,
+            observacion
+        );
+        // Registra en lista de entradas del historial
+    }
 }
 ```
 
@@ -277,15 +295,15 @@ private void registrarHistorial(AccionHistorial accion, UsuarioReferencia usuari
 
 El dominio NO depende de ninguna infraestructura (Spring, bases de datos, etc.):
 
-- **Entidades:** `Usuario`, `Solicitud`, `EntradaHistorial`
-- **Value Objects:** `Email`, `IdentificacionUsuario`, `UsuarioReferencia`, `DescripcionSolicitud`, `JustificacionPrioridad`, `SolicitudId`
-- **Domain Service:** `SolicitudDomainService` (Sin anotaciones Spring)
-- **Excepciones:** `DomainException`, `BusinessRuleViolation`
+- **Entidades:** `Usuario`, `Solicitud`, `EntradaHistorial` (record)
+- **Value Objects:** `Email`, `IdentificacionUsuario`, `DescripcionSolicitud`, `JustificacionPrioridad`, `SolicitudId`, `IdentificacionSolicitante`
+- **Domain Services:** `SolicitudDomainService`, `HistorialService` (Sin anotaciones Spring)
+- **Excepciones:** `DomainException`
 - **Config:** `DomainServiceConfig`
 
 ### 4.2 Inyección de Dependencias
 
-El Domain Service se inyecta desde la capa de aplicación mediante configuración:
+Los Domain Services se inyectan desde la capa de aplicación mediante configuración:
 
 ```java
 // DomainServiceConfig.java
@@ -294,6 +312,11 @@ public class DomainServiceConfig {
     @Bean
     public SolicitudDomainService solicitudDomainService() {
         return new SolicitudDomainService();
+    }
+    
+    @Bean
+    public HistorialService historialService() {
+        return new HistorialService();
     }
 }
 ```
@@ -304,12 +327,12 @@ Todos los VO son `record` con validación en el constructor:
 
 ```java
 // Ejemplo: Email.java
-public record Email(String value) {
+public record Email(String valor) {
     public Email {
-        if (value == null || value.isBlank()) {
+        if (valor == null || valor.isBlank()) {
             throw new DomainException("El email es obligatorio");
         }
-        if (!value.matches("^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$")) {
+        if (!valor.matches("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$")) {
             throw new DomainException("El formato del email es inválido");
         }
     }
@@ -324,9 +347,9 @@ public record Email(String value) {
 
 | Entidad | Responsabilidad |
 |---------|-----------------|
-| `Usuario` | Representa un usuario del sistema con rol (ESTUDIANTE, DOCENTE, COORDINADOR) |
+| `Usuario` | Representa un usuario del sistema con rol (ESTUDIANTE, PROFESOR, ADMINISTRATIVO, COORDINADOR) y estado (ACTIVO, INACTIVO) |
 | `Solicitud` | Raíz del agregado, gestiona el ciclo de vida de una solicitud |
-| `EntradaHistorial` | Representa una entrada de auditoría en el historial |
+| `EntradaHistorial` | Record que representa una entrada de auditoría en el historial |
 
 ### 5.2 Value Objects
 
@@ -334,38 +357,59 @@ public record Email(String value) {
 |----|-------------|
 | `Email` | Correo electrónico validado |
 | `IdentificacionUsuario` | UUID tipado para identificar usuarios |
-| `UsuarioReferencia` | Referencia (UUID + nombre) a un usuario |
-| `DescripcionSolicitud` | Descripción de la solicitud (10-1000 caracteres) |
-| `JustificacionPrioridad` | Justificación de prioridad (mínimo 10 caracteres) |
+| `DescripcionSolicitud` | Descripción de la solicitud (10-500 caracteres) |
+| `JustificacionPrioridad` | Justificación de prioridad (5-300 caracteres) |
 | `SolicitudId` | UUID tipado para identificar solicitudes |
-| `AccionHistorial` | Enum con las acciones registrables en el historial |
+| `IdentificacionSolicitante` | Identificación del solicitante |
 
 ### 5.3 Excepciones del Dominio
 
 | Excepción | Uso |
 |-----------|-----|
-| `DomainException` | Excepción base para errores de dominio |
-| `BusinessRuleViolation` | Para violaciones de reglas de negocio |
+| `DomainException` | Excepción base para errores de dominio y violaciones de reglas de negocio |
 
 ### 5.4 Enums
 
-| Enums             | Contenido                                                                                                                                                                                                                                                                                           |
-|-------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `AccionHistorial` | REGISTRAR_SOLICITUD, CLASIFICAR_SOLICITUD, PRIORIZAR_SOLICITUD, ASIGNAR_RESPONSABLE, MARCAR_ATENDIDA,CERRAR_SOLICITUD, se genera además de eso unos posibles enums para el uso de IA, los cuales son: SUGERENCIA_IA_GENERADA, SUGERENCIA_IA_CONFIRMADA, SUGERENCIA_IA_AJUSTADA, RESUMEN_IA_GENERADO |
-| `CanalOrigen`     | CSU, CORREO, SAC, TELEFONICO, PRESENCIAL                                                                                                                                                                                                                                                            |
-| `EstadoSolicitud` | REGISTRADA, CLASIFICADA, EN_ATENCION, ATENDIDA, CERRADA                                                                                                                                                                                                                                             |
-| `Prioridad`       | ALTA, MEDIA, BAJA |
-| `Rol`             | ESTUDIANTE, COORDINADOR, DOCENTE                                                                                                                                                                                                                                                                    |
-| `TipoSolicitud`   | REGISTRO_ASIGNATURAS,HOMOLOGACION, CANCELACION_ASIGNATURAS, SOLICITUD_CUPOS, CONSULTA_ACADEMICA                                                                                                                                                                                                     |
-
+| Enum | Contenido |
+|------|-----------|
+| `AccionHistorial` | REGISTRAR_SOLICITUD, CLASIFICAR_SOLICITUD, PRIORIZAR_SOLICITUD, ASIGNAR_RESPONSABLE, MARCAR_ATENDIDA, CERRAR_SOLICITUD |
+| `CanalOrigen` | PRESENCIAL, TELEFONICO, CORREO_ELECTRONICO, APLICACION_WEB, APLICACION_MOVIL |
+| `EstadoSolicitud` | REGISTRADA, CLASIFICADA, EN_ATENCION, ATENDIDA, CERRADA |
+| `EstadoUsuario` | ACTIVO, INACTIVO |
+| `Prioridad` | BAJA, MEDIA, ALTA |
+| `Rol` | ESTUDIANTE, PROFESOR, ADMINISTRATIVO, COORDINADOR |
+| `TipoSolicitud` | QUEJA, RECLAMO, SUGERENCIA, PETICION, FELICITACION |
 
 ---
 
-## 6. Pruebas Unitarias del Dominio
+## 6. Domain Services
 
-El dominio cuenta con **25+ pruebas unitarias** que validan las reglas de negocio, value objects y excepciones:
+### 6.1 SolicitudDomainService
 
-### 6.1 Tests de Entidades
+Gestiona las validaciones de negocio relacionadas con las solicitudes:
+
+- `validarCrearSolicitud()` - Valida que el solicitante pueda crear una nueva solicitud
+- `validarClasificar()` - Valida que la solicitud pueda ser clasificada
+- `validarPriorizar()` - Valida que la solicitud pueda ser priorizada
+- `validarAsignarResponsable()` - Valida que se pueda asignar un responsable
+- `validarMarcarAtendida()` - Valida que la solicitud pueda ser marcada como atendida
+- `validarCerrar()` - Valida que la solicitud pueda ser cerrada
+- `obtenerSolicitudesPorSolicitante()` - Obtiene solicitudes de un solicitante
+- `obtenerSolicitudesPorResponsable()` - Obtiene solicitudes asignadas a un responsable
+
+### 6.2 HistorialService
+
+Gestiona el registro de entradas en el historial de auditoría:
+
+- `registrarHistorial()` - Registra una nueva entrada en el historial de una solicitud
+
+---
+
+## 7. Pruebas Unitarias del Dominio
+
+El dominio cuenta con **70 pruebas unitarias** que validan las reglas de negocio, value objects, enums y excepciones:
+
+### 7.1 Tests de Entidades
 
 #### UsuarioTest (8 pruebas)
 - ✅ crearUsuario_valido
@@ -391,44 +435,94 @@ El dominio cuenta con **25+ pruebas unitarias** que validan las reglas de negoci
 #### EntradaHistorialTest (1 prueba)
 - ✅ crearEntradaHistorial_valida
 
-### 6.2 Tests de Value Objects
+### 7.2 Tests de Value Objects
 
-#### EmailTest
-- ✅ crearEmail_valido
-- ✅ crearEmail_nulo
-- ✅ crearEmail_formatoInvalido
+#### EmailTest (6 pruebas)
+- ✅ crearEmailValido
+- ✅ crearEmailNuloDebeLanzarExcepcion
+- ✅ crearEmailVacioDebeLanzarExcepcion
+- ✅ crearEmailSinArrobaDebeLanzarExcepcion
+- ✅ crearEmailSinDominioDebeLanzarExcepcion
+- ✅ crearEmailConEspaciosDebeLanzarExcepcion
 
-#### IdentificacionUsuarioTest
-- ✅ crearIdentificacion_valida
-- ✅ newId_generaUUID
+#### IdentificacionUsuarioTest (6 pruebas)
+- ✅ crearIdentificacionValida
+- ✅ crearIdentificacionNulaDebeLanzarExcepcion
+- ✅ crearIdentificacionVaciaDebeLanzarExcepcion
+- ✅ crearIdentificacionEnBlancoDebeLanzarExcepcion
+- ✅ crearIdentificacionNewId
+- ✅ crearIdentificacionFromUUID
 
-#### DescripcionSolicitudTest
-- ✅ crearDescripcion_valida
-- ✅ crearDescripcion_muyCorta
-- ✅ crearDescripcion_muyLarga
+#### DescripcionSolicitudTest (7 pruebas)
+- ✅ crearDescripcionValida
+- ✅ crearDescripcionNulaDebeLanzarExcepcion
+- ✅ crearDescripcionVaciaDebeLanzarExcepcion
+- ✅ crearDescripcionMuyCortaDebeLanzarExcepcion
+- ✅ crearDescripcionMuyLargaDebeLanzarExcepcion
+- ✅ crearDescripcionExactaMinima
+- ✅ crearDescripcionExactaMaxima
 
-#### JustificacionPrioridadTest
-- ✅ crearJustificacion_valida
-- ✅ crearJustificacion_muyCorta
+#### JustificacionPrioridadTest (7 pruebas)
+- ✅ crearJustificacionValida
+- ✅ crearJustificacionNulaDebeLanzarExcepcion
+- ✅ crearJustificacionVaciaDebeLanzarExcepcion
+- ✅ crearJustificacionMuyCortaDebeLanzarExcepcion
+- ✅ crearJustificacionMuyLargaDebeLanzarExcepcion
+- ✅ crearJustificacionExactaMinima
+- ✅ crearJustificacionExactaMaxima
 
-#### SolicitudIdTest
-- ✅ newId_generaUUID
+#### SolicitudIdTest (5 pruebas)
+- ✅ crearSolicitudIdValido
+- ✅ crearSolicitudIdNuloDebeLanzarExcepcion
+- ✅ crearSolicitudIdVacioDebeLanzarExcepcion
+- ✅ crearSolicitudIdNewId
+- ✅ crearSolicitudIdFromUUID
 
-### 6.3 Tests de Excepciones
+#### IdentificacionSolicitanteTest (4 pruebas)
+- ✅ crearIdentificacionValida
+- ✅ crearIdentificacionNulaDebeLanzarExcepcion
+- ✅ crearIdentificacionVaciaDebeLanzarExcepcion
+- ✅ crearIdentificacionEnBlancoDebeLanzarExcepcion
 
-#### DomainExceptionTest
-- ✅ mensaje_sePreserva
+### 7.3 Tests de Enums
 
-#### BusinessRuleViolationTest
-- ✅ mensaje_sePreserva
+#### EstadoUsuarioTest (4 pruebas)
+- ✅ valoresDebenExistir
+- ✅ activoEsActivo
+- ✅ inactivoEsInactivo
+- ✅ cantidadDeValores
 
-**Total: 25 pruebas unitarias**
+#### AccionHistorialTest (2 pruebas)
+- ✅ valoresDebenExistir
+- ✅ cantidadDeValores
+
+#### CanalOrigenTest (2 pruebas)
+- ✅ valoresDebenExistir
+- ✅ cantidadDeValores
+
+#### EstadoSolicitudTest (2 pruebas)
+- ✅ valoresDebenExistir
+- ✅ cantidadDeValores
+
+#### PrioridadTest (2 pruebas)
+- ✅ valoresDebenExistir
+- ✅ cantidadDeValores
+
+#### RolTest (2 pruebas)
+- ✅ valoresDebenExistir
+- ✅ cantidadDeValores
+
+#### TipoSolicitudTest (2 pruebas)
+- ✅ valoresDebenExistir
+- ✅ cantidadDeValores
+
+**Total: 70 pruebas unitarias**
 
 ---
 
-## 7. Notas de Implementación
+## 8. Notas de Implementación
 
-### 7.1 Decisiones de Diseño
+### 8.1 Decisiones de Diseño
 
 1. **Dominio Puro:** El dominio no tiene dependencias de frameworks. Esto facilita las pruebas unitarias y la portabilidad.
 
@@ -436,15 +530,30 @@ El dominio cuenta con **25+ pruebas unitarias** que validan las reglas de negoci
 
 3. **Enum para Acciones de Historial:** En lugar de strings, usamos un enum tipado para las acciones del historial.
 
-4. **Domain Service como POJO:** El servicio de dominio no tiene anotaciones de Spring, se inyecta desde la configuración.
+4. **Domain Services como POJOs:** Los servicios de dominio no tienen anotaciones de Spring, se inyectan desde la configuración.
 
-### 7.2 Posibles Extensiones
+5. **EntradaHistorial como Record:** El historial de auditoría usa un `record` con ID único para trazabilidad.
 
-- **Identante:** La clase IdentificacionSolicitud está actualmente inactiva. Fue diseñada para soportar solicitantes externos (personas sin cuenta en el sistema). Se puede activar cuando se implemente esta funcionalidad.
+6. **Enum EstadoUsuario:** Se usa un enum para el estado del usuario en lugar de un `boolean` para mejor legibilidad y extensibilidad.
+
+7. **HistorialService Separado:** El servicio de historial se separó de la entidad `Solicitud` para seguir el principio de responsabilidad única.
+
+### 8.2 Cambios de la Revisión del Profesor
+
+| Corrección | Solución Implementada |
+|------------|---------------------|
+| EntradaHistorial | Convertido a `record` con ID (UUID, usuarioId, nombreUsuario) |
+| Paquetes `valueObject` | Renombrado a `valueobject` (minúsculas) |
+| UsuarioReferencia | Eliminado completamente |
+| boolean activo | Creado enum `EstadoUsuario` (ACTIVO, INACTIVO) |
+| Lista solicitudesRegistradas | Eliminada de Usuario |
+| registrarHistorial() | Creado `HistorialService` en `domain.service` |
+| Instant.now() en historial | Movido al constructor privado de EntradaHistorial |
+| Validar estados en clasificar() | Agregada validación de estado REGISTRADA |
 
 ---
 
-## 8. Referencias al Código
+## 9. Referencias al Código
 
 | Regla | Clase | Método |
 |-------|-------|--------|
@@ -454,11 +563,11 @@ El dominio cuenta con **25+ pruebas unitarias** que validan las reglas de negoci
 | Regla 4 | `SolicitudDomainService` | `validarAsignarResponsable` |
 | Regla 5 | `Solicitud` | `clasificar`, `priorizar`, `asignarResponsable`, `marcarAtendida`, `cerrar` |
 | Regla 6 | `Solicitud` | `asegurarNoCerrada` |
-| Regla 7 | `Solicitud`, `EntradaHistorial` | `registrarHistorial`, constructor de `EntradaHistorial` |
+| Regla 7 | `HistorialService`, `EntradaHistorial` | `registrarHistorial`, constructor de `EntradaHistorial` |
 
 ---
 
-## 9. Historial de Cambios
+## 10. Historial de Cambios
 
 | Fecha | Versión | Descripción |
 |-------|---------|-------------|

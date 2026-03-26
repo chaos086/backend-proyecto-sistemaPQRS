@@ -3,27 +3,16 @@ package co.edu.uniquindio.proyecto.domain.service;
 import co.edu.uniquindio.proyecto.domain.entity.Solicitud;
 import co.edu.uniquindio.proyecto.domain.entity.Usuario;
 import co.edu.uniquindio.proyecto.domain.exception.BusinessRuleViolation;
-import co.edu.uniquindio.proyecto.domain.valueObject.UsuarioReferencia;
-import co.edu.uniquindio.proyecto.domain.valueObject.enums.EstadoSolicitud;
-import co.edu.uniquindio.proyecto.domain.valueObject.enums.Rol;
+import co.edu.uniquindio.proyecto.domain.valueobject.enums.EstadoSolicitud;
+import co.edu.uniquindio.proyecto.domain.valueobject.enums.Rol;
 import java.util.List;
+import java.util.UUID;
 
-/**
- * Domain Service que encapsula las reglas de negocio del sistema de PQRS.
- * 
- * Principio DDD: Este servicio SOLO valida reglas de negocio.
- * Las operaciones las ejecutan las entidades (Solicitud).
- */
 public class SolicitudDomainService {
 
     private static final int MAX_SOLICITUDES_PENDIENTES_POR_SOLICITANTE = 5;
     private static final int MAX_SOLICITUDES_EN_ATENCION_POR_DOCENTE = 10;
 
-    // ==================== VALIDACIONES DE CREAR SOLICITUD ====================
-
-    /**
-     * Valida que un solicitante pueda crear una nueva solicitud.
-     */
     public void validarCrearSolicitud(Usuario solicitante, List<Solicitud> solicitudesExistentes) {
         if (solicitante == null) {
             throw new BusinessRuleViolation("El solicitante no puede ser null");
@@ -33,7 +22,7 @@ public class SolicitudDomainService {
         }
 
         long solicitudesPendientes = solicitudesExistentes.stream()
-                .filter(s -> s.solicitante().value().equals(solicitante.id().value()))
+                .filter(s -> s.solicitanteId().toString().equals(solicitante.id().valor()))
                 .filter(s -> s.estado() == EstadoSolicitud.REGISTRADA || 
                              s.estado() == EstadoSolicitud.CLASIFICADA ||
                              s.estado() == EstadoSolicitud.EN_ATENCION)
@@ -45,12 +34,6 @@ public class SolicitudDomainService {
         }
     }
 
-    // ==================== VALIDACIONES DE CLASIFICAR ====================
-
-    /**
-     * Valida que la solicitud pueda ser clasificada.
-     * Debe estar en estado REGISTRADA.
-     */
     public void validarClasificar(Solicitud solicitud) {
         if (solicitud == null) {
             throw new BusinessRuleViolation("La solicitud no puede ser null");
@@ -60,12 +43,6 @@ public class SolicitudDomainService {
         }
     }
 
-    // ==================== VALIDACIONES DE PRIORIZAR ====================
-
-    /**
-     * Valida que la solicitud pueda ser priorizada.
-     * Debe estar en estado CLASIFICADA.
-     */
     public void validarPriorizar(Solicitud solicitud) {
         if (solicitud == null) {
             throw new BusinessRuleViolation("La solicitud no puede ser null");
@@ -75,12 +52,6 @@ public class SolicitudDomainService {
         }
     }
 
-    // ==================== VALIDACIONES DE ASIGNAR RESPONSABLE ====================
-
-    /**
-     * Valida que se pueda asignar un responsable a una solicitud.
-     * Verifica: estado de solicitud, que el docente esté activo, rol DOCENTE, y límite de solicitudes.
-     */
     public void validarAsignarResponsable(Solicitud solicitud, Usuario responsable, List<Solicitud> solicitudesExistentes) {
         if (solicitud == null) {
             throw new BusinessRuleViolation("La solicitud no puede ser null");
@@ -94,13 +65,13 @@ public class SolicitudDomainService {
         if (!responsable.activo()) {
             throw new BusinessRuleViolation("El responsable debe estar activo");
         }
-        if (responsable.rol() != Rol.DOCENTE) {
+        if (responsable.rol() != Rol.PROFESOR) {
             throw new BusinessRuleViolation("Solo un docente puede ser asignado como responsable");
         }
 
         long solicitudesEnAtencion = solicitudesExistentes.stream()
-                .filter(s -> s.responsable() != null)
-                .filter(s -> s.responsable().value().equals(responsable.id().value()))
+                .filter(s -> s.responsableId() != null)
+                .filter(s -> s.responsableId().toString().equals(responsable.id().valor()))
                 .filter(s -> s.estado() == EstadoSolicitud.EN_ATENCION)
                 .count();
 
@@ -110,36 +81,24 @@ public class SolicitudDomainService {
         }
     }
 
-    // ==================== VALIDACIONES DE MARCAR ATENDIDA ====================
-
-    /**
-     * Valida que la solicitud pueda ser marcada como atendida.
-     * Verifica: estado EN_ATENCION y que el responsable sea el mismo.
-     */
-    public void validarMarcarAtendida(Solicitud solicitud, UsuarioReferencia responsable) {
+    public void validarMarcarAtendida(Solicitud solicitud, UUID responsableId) {
         if (solicitud == null) {
             throw new BusinessRuleViolation("La solicitud no puede ser null");
         }
-        if (responsable == null) {
+        if (responsableId == null) {
             throw new BusinessRuleViolation("El responsable no puede ser null");
         }
         if (solicitud.estado() != EstadoSolicitud.EN_ATENCION) {
             throw new BusinessRuleViolation("Solo se puede atender una solicitud en estado EN_ATENCION");
         }
-        if (solicitud.responsable() == null) {
+        if (solicitud.responsableId() == null) {
             throw new BusinessRuleViolation("No se puede atender sin responsable asignado");
         }
-        if (!solicitud.responsable().equals(responsable)) {
+        if (!solicitud.responsableId().equals(responsableId)) {
             throw new BusinessRuleViolation("Solo el responsable asignado puede marcar como atendida");
         }
     }
 
-    // ==================== VALIDACIONES DE CERRAR ====================
-
-    /**
-     * Valida que la solicitud pueda ser cerrada.
-     * Debe estar en estado ATENDIDA.
-     */
     public void validarCerrar(Solicitud solicitud) {
         if (solicitud == null) {
             throw new BusinessRuleViolation("La solicitud no puede ser null");

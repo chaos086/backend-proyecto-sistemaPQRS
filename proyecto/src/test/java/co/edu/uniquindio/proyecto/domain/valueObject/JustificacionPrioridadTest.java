@@ -1,48 +1,50 @@
-package co.edu.uniquindio.proyecto.domain.valueObject;
+package co.edu.uniquindio.proyecto.domain.valueobject;
 
 import co.edu.uniquindio.proyecto.domain.exception.DomainException;
 import org.junit.jupiter.api.Test;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 class JustificacionPrioridadTest {
 
-    /**
-     * Verifica que una justificación válida para la prioridad
-     * pueda crearse correctamente.
-     *
-     * GIVEN: un texto de justificación que cumple con las reglas del dominio
-     * WHEN: se crea una instancia de JustificacionPrioridad
-     * THEN: el valor almacenado coincide con el texto proporcionado
-     */
     @Test
-    void justificacionValida() {
-        JustificacionPrioridad j = new JustificacionPrioridad("Justificación válida para la prioridad");
-        assertEquals("Justificación válida para la prioridad", j.value());
+    void crearJustificacionValida() {
+        JustificacionPrioridad just = JustificacionPrioridad.of("Justificacion valida para la prioridad");
+        assertNotNull(just);
+        assertEquals("Justificacion valida para la prioridad", just.valor());
     }
 
-    /**
-     * Verifica que no sea posible crear una justificación de prioridad
-     * con un valor nulo.
-     *
-     * GIVEN: un valor nulo como justificación
-     * WHEN: se intenta crear una instancia de JustificacionPrioridad
-     * THEN: se lanza una DomainException indicando que la justificación es inválida
-     */
     @Test
-    void justificacionNulaLanzaExcepcion() {
-        assertThrows(DomainException.class, () -> new JustificacionPrioridad(null));
+    void crearJustificacionNulaDebeLanzarExcepcion() {
+        assertThrows(DomainException.class, () -> JustificacionPrioridad.of(null));
     }
 
-    /**
-     * Verifica que no se permita crear una justificación con menos
-     * de la longitud mínima requerida por el dominio.
-     *
-     * GIVEN: una justificación con menos de 10 caracteres
-     * WHEN: se intenta crear una instancia de JustificacionPrioridad
-     * THEN: se lanza una DomainException indicando que la justificación es demasiado corta
-     */
     @Test
-    void justificacionConMenosDiezLanzaExcepcion() {
-        assertThrows(DomainException.class, () -> new JustificacionPrioridad("Corta"));
+    void crearJustificacionVaciaDebeLanzarExcepcion() {
+        assertThrows(DomainException.class, () -> JustificacionPrioridad.of(""));
+    }
+
+    @Test
+    void crearJustificacionMuyCortaDebeLanzarExcepcion() {
+        assertThrows(DomainException.class, () -> JustificacionPrioridad.of("abcd"));
+    }
+
+    @Test
+    void crearJustificacionMuyLargaDebeLanzarExcepcion() {
+        String justificacionLarga = "a".repeat(301);
+        assertThrows(DomainException.class, () -> JustificacionPrioridad.of(justificacionLarga));
+    }
+
+    @Test
+    void crearJustificacionExactaMinima() {
+        JustificacionPrioridad just = JustificacionPrioridad.of("12345");
+        assertNotNull(just);
+    }
+
+    @Test
+    void crearJustificacionExactaMaxima() {
+        String justMax = "a".repeat(300);
+        JustificacionPrioridad just = JustificacionPrioridad.of(justMax);
+        assertNotNull(just);
     }
 }

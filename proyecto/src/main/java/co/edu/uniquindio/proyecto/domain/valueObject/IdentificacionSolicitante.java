@@ -1,20 +1,16 @@
-package co.edu.uniquindio.proyecto.domain.valueObject;
+package co.edu.uniquindio.proyecto.domain.valueobject;
 
-/**
- * Value Object para representar la identificación de un solicitante externo.
- * 
- * Esta clase es para soportar personas externas (no registradas en el sistema).
- * Temporalmente no se estaba utilizando en ninguna parte del código, sin embargo,
- * eso no quita el hecho de una posible utilización para implementar el soporte de externos.
- *
- * 
- * TODO: Activar cuando se implemente soporte para solicitantes externos
- */
-public record IdentificacionSolicitante(String value) {
+import co.edu.uniquindio.proyecto.domain.exception.DomainException;
+
+public record IdentificacionSolicitante(String valor) {
 
     public IdentificacionSolicitante {
-        if (value == null || value.isBlank()) {
-            throw new IllegalArgumentException("La identificación del solicitante es obligatoria");
+        if (valor == null || valor.isBlank()) {
+            throw new DomainException("La identificación del solicitante es obligatoria");
         }
+    }
+
+    public static IdentificacionSolicitante of(String identificacion) {
+        return new IdentificacionSolicitante(identificacion);
     }
 }

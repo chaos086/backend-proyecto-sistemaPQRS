@@ -1,7 +1,7 @@
 package co.edu.uniquindio.proyecto.infrastructure.persistence;
 
 import co.edu.uniquindio.proyecto.domain.entity.Solicitud;
-import co.edu.uniquindio.proyecto.domain.valueObject.SolicitudId;
+import co.edu.uniquindio.proyecto.domain.valueobject.SolicitudId;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;

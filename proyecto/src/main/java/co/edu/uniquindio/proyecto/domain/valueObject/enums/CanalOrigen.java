@@ -1,9 +1,9 @@
-package co.edu.uniquindio.proyecto.domain.valueObject.enums;
+package co.edu.uniquindio.proyecto.domain.valueobject.enums;
 
 public enum CanalOrigen {
-    CSU,
-    CORREO,
-    SAC,
+    PRESENCIAL,
     TELEFONICO,
-    PRESENCIAL
+    CORREO_ELECTRONICO,
+    APLICACION_WEB,
+    APLICACION_MOVIL
 }

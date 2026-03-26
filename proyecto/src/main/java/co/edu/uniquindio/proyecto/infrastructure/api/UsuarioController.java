@@ -2,8 +2,8 @@ package co.edu.uniquindio.proyecto.infrastructure.api;
 
 import co.edu.uniquindio.proyecto.application.UsuarioApplicationService;
 import co.edu.uniquindio.proyecto.domain.entity.Usuario;
-import co.edu.uniquindio.proyecto.domain.valueObject.IdentificacionUsuario;
-import co.edu.uniquindio.proyecto.domain.valueObject.enums.Rol;
+import co.edu.uniquindio.proyecto.domain.valueobject.IdentificacionUsuario;
+import co.edu.uniquindio.proyecto.domain.valueobject.enums.Rol;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -64,7 +64,7 @@ public class UsuarioController {
      */
     @PutMapping("/{id}/activar")
     public ResponseEntity<Void> activarUsuario(@PathVariable UUID id) {
-        IdentificacionUsuario identificacion = new IdentificacionUsuario(id);
+        IdentificacionUsuario identificacion = IdentificacionUsuario.of(id);
         usuarioService.activarUsuario(identificacion);
         return ResponseEntity.ok().build();
     }
@@ -75,7 +75,7 @@ public class UsuarioController {
      */
     @PutMapping("/{id}/desactivar")
     public ResponseEntity<Void> desactivarUsuario(@PathVariable UUID id) {
-        IdentificacionUsuario identificacion = new IdentificacionUsuario(id);
+        IdentificacionUsuario identificacion = IdentificacionUsuario.of(id);
         usuarioService.desactivarUsuario(identificacion);
         return ResponseEntity.ok().build();
     }
@@ -87,7 +87,7 @@ public class UsuarioController {
      */
     @GetMapping("/{id}")
     public ResponseEntity<Usuario> obtenerUsuario(@PathVariable UUID id) {
-        IdentificacionUsuario identificacion = new IdentificacionUsuario(id);
+        IdentificacionUsuario identificacion = IdentificacionUsuario.of(id);
         Usuario usuario = usuarioService.obtenerUsuario(identificacion);
         return ResponseEntity.ok(usuario);
     }

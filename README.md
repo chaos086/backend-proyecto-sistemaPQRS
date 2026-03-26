@@ -18,7 +18,7 @@ El sistema permite a los estudiantes, docentes y demás usuarios de la instituci
 
 ### Funcionalidades Principales
 
-- **Registro de Solicitudes**: Los usuarios pueden crear solicitudes (eticiones, quejasp, reclamos o sugerencias) a través de diferentes canales.
+- **Registro de Solicitudes**: Los usuarios pueden crear solicitudes (peticiones, quejas, reclamos o sugerencias) a través de diferentes canales.
 - **Clasificación y Priorización**: Los coordinadores pueden clasificar el tipo de solicitud y asignar una prioridad.
 - **Asignación de Responsable**: Un docente es asignado para atender la solicitud.
 - **Seguimiento**: Se mantiene un historial completo de cada solicitud para trazabilidad.
@@ -27,7 +27,7 @@ El sistema permite a los estudiantes, docentes y demás usuarios de la instituci
 ### Reglas de Negocio
 
 - Un solicitante no puede tener más de **5 solicitudes pendientes** simultáneamente.
-- Un docente no puede tener más de **10 solicitudes en atención** simultáneamente.
+- Un profesor no puede tener más de **10 solicitudes en atención** simultáneamente.
 - Solo usuarios activos pueden crear o atender solicitudes.
 - Solo los docentes pueden ser asignados como responsables.
 
@@ -52,7 +52,7 @@ proyecto/
 │   ├── │   └── java/co/edu/uniquindio/proyecto/
 │   │       ├── domain/
 │   │       │   ├── entity/          # Entidades del dominio
-│   │       │   ├── valueObject/     # Value Objects y Enums
+│   │       │   ├── valueobject/     # Value Objects y Enums
 │   │       │   ├── exception/       # Excepciones del dominio
 │   │       │   └── service/          # Domain Services
 │   │       ├── application/          # Application Services

@@ -1,9 +1,14 @@
 package co.edu.uniquindio.proyecto.domain.entity;
 
-import co.edu.uniquindio.proyecto.domain.valueObject.*;
-import co.edu.uniquindio.proyecto.domain.valueObject.enums.*;
-import co.edu.uniquindio.proyecto.domain.exception.BusinessRuleViolation;
+import co.edu.uniquindio.proyecto.domain.service.HistorialService;
+import co.edu.uniquindio.proyecto.domain.valueobject.DescripcionSolicitud;
+import co.edu.uniquindio.proyecto.domain.valueobject.JustificacionPrioridad;
+import co.edu.uniquindio.proyecto.domain.valueobject.enums.CanalOrigen;
+import co.edu.uniquindio.proyecto.domain.valueobject.enums.EstadoSolicitud;
+import co.edu.uniquindio.proyecto.domain.valueobject.enums.Prioridad;
+import co.edu.uniquindio.proyecto.domain.valueobject.enums.TipoSolicitud;
 import co.edu.uniquindio.proyecto.domain.exception.DomainException;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.UUID;
@@ -12,128 +17,104 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class SolicitudTest {
 
-    /**
-     * Verifica que una solicitud se cree correctamente cuando se proporcionan
-     * todos los datos requeridos.
-     */
+    private HistorialService historialService;
+
+    @BeforeEach
+    void setUp() {
+        historialService = new HistorialService();
+    }
+
     @Test
     void crearSolicitudValida() {
-        UsuarioReferencia solicitante = new UsuarioReferencia(UUID.randomUUID(), "Solicitante");
+        UUID solicitanteId = UUID.randomUUID();
         DescripcionSolicitud desc = new DescripcionSolicitud("Descripcion valida para la solicitud");
-        Solicitud s = Solicitud.crear(solicitante, CanalOrigen.CSU, desc);
+        Solicitud s = Solicitud.crear(solicitanteId, "Solicitante", CanalOrigen.PRESENCIAL, desc, historialService);
         assertNotNull(s);
         assertEquals(EstadoSolicitud.REGISTRADA, s.estado());
     }
 
-    /**
-     * Verifica que no sea posible crear una solicitud cuando el solicitante es nulo.
-     */
     @Test
-    void crearSolicitud_solicitanteNulo() {
+    void crearSolicitud_solicitanteIdNulo() {
         DescripcionSolicitud desc = new DescripcionSolicitud("Descripcion valida para la solicitud");
         assertThrows(DomainException.class, () -> 
-                Solicitud.crear(null, CanalOrigen.CSU, desc));
+                Solicitud.crear(null, "Solicitante", CanalOrigen.PRESENCIAL, desc, historialService));
     }
 
-    /**
-     * Verifica que no sea posible crear una solicitud cuando el canal de origen es nulo.
-     */
     @Test
     void crearSolicitud_canalNulo() {
-        UsuarioReferencia solicitante = new UsuarioReferencia(UUID.randomUUID(), "Solicitante");
+        UUID solicitanteId = UUID.randomUUID();
         DescripcionSolicitud desc = new DescripcionSolicitud("Descripcion valida para la solicitud");
         assertThrows(DomainException.class, () -> 
-                Solicitud.crear(solicitante, null, desc));
+                Solicitud.crear(solicitanteId, "Solicitante", null, desc, historialService));
     }
 
-    /**
-     * Verifica que el estado inicial de una solicitud recién creada sea REGISTRADA.
-     */
     @Test
     void estadoInicial_registrada() {
-        UsuarioReferencia solicitante = new UsuarioReferencia(UUID.randomUUID(), "Solicitante");
+        UUID solicitanteId = UUID.randomUUID();
         DescripcionSolicitud desc = new DescripcionSolicitud("Descripcion valida para la solicitud");
-        Solicitud s = Solicitud.crear(solicitante, CanalOrigen.CSU, desc);
+        Solicitud s = Solicitud.crear(solicitanteId, "Solicitante", CanalOrigen.PRESENCIAL, desc, historialService);
         assertEquals(EstadoSolicitud.REGISTRADA, s.estado());
     }
 
-    /**
-     * Verifica que una solicitud pueda ser clasificada.
-     */
     @Test
     void clasificar_enEstadoRegistrada() {
-        UsuarioReferencia solicitante = new UsuarioReferencia(UUID.randomUUID(), "Solicitante");
+        UUID solicitanteId = UUID.randomUUID();
+        UUID coordinadorId = UUID.randomUUID();
         DescripcionSolicitud desc = new DescripcionSolicitud("Descripcion valida para la solicitud");
-        Solicitud s = Solicitud.crear(solicitante, CanalOrigen.CSU, desc);
-        UsuarioReferencia coordinador = new UsuarioReferencia(UUID.randomUUID(), "Coordinador");
-        s.clasificar(TipoSolicitud.HOMOLOGACION, coordinador);
+        Solicitud s = Solicitud.crear(solicitanteId, "Solicitante", CanalOrigen.PRESENCIAL, desc, historialService);
+        s.clasificar(TipoSolicitud.PETICION, coordinadorId, "Coordinador");
         assertEquals(EstadoSolicitud.CLASIFICADA, s.estado());
-        assertEquals(TipoSolicitud.HOMOLOGACION, s.tipoSolicitud());
+        assertEquals(TipoSolicitud.PETICION, s.tipoSolicitud());
     }
 
-    /**
-     * Verifica que se pueda asignar una prioridad a una solicitud.
-     */
     @Test
     void priorizar_enEstadoClasificada() {
-        UsuarioReferencia solicitante = new UsuarioReferencia(UUID.randomUUID(), "Solicitante");
+        UUID solicitanteId = UUID.randomUUID();
+        UUID coordinadorId = UUID.randomUUID();
         DescripcionSolicitud desc = new DescripcionSolicitud("Descripcion valida para la solicitud");
-        Solicitud s = Solicitud.crear(solicitante, CanalOrigen.CSU, desc);
-        UsuarioReferencia coordinador = new UsuarioReferencia(UUID.randomUUID(), "Coordinador");
-        s.clasificar(TipoSolicitud.HOMOLOGACION, coordinador);
-        s.priorizar(Prioridad.ALTA, new JustificacionPrioridad("Justificacion valida para la prioridad"), coordinador);
+        Solicitud s = Solicitud.crear(solicitanteId, "Solicitante", CanalOrigen.PRESENCIAL, desc, historialService);
+        s.clasificar(TipoSolicitud.PETICION, coordinadorId, "Coordinador");
+        s.priorizar(Prioridad.ALTA, new JustificacionPrioridad("Justificacion valida para la prioridad"), coordinadorId, "Coordinador");
         assertEquals(Prioridad.ALTA, s.prioridad());
     }
 
-    /**
-     * Verifica que se pueda asignar un responsable a una solicitud.
-     */
     @Test
     void asignarResponsable_funciona() {
-        UsuarioReferencia solicitante = new UsuarioReferencia(UUID.randomUUID(), "Solicitante");
+        UUID solicitanteId = UUID.randomUUID();
+        UUID coordinadorId = UUID.randomUUID();
+        UUID docenteId = UUID.randomUUID();
         DescripcionSolicitud desc = new DescripcionSolicitud("Descripcion valida para la solicitud");
-        Solicitud s = Solicitud.crear(solicitante, CanalOrigen.CSU, desc);
-        UsuarioReferencia coordinador = new UsuarioReferencia(UUID.randomUUID(), "Coordinador");
-        s.clasificar(TipoSolicitud.HOMOLOGACION, coordinador);
-        
-        UsuarioReferencia docenteRef = new UsuarioReferencia(UUID.randomUUID(), "Docente");
-        s.asignarResponsable(docenteRef, coordinador);
+        Solicitud s = Solicitud.crear(solicitanteId, "Solicitante", CanalOrigen.PRESENCIAL, desc, historialService);
+        s.clasificar(TipoSolicitud.PETICION, coordinadorId, "Coordinador");
+        s.asignarResponsable(docenteId, "Docente", coordinadorId, "Coordinador");
         assertEquals(EstadoSolicitud.EN_ATENCION, s.estado());
-        assertNotNull(s.responsable());
+        assertNotNull(s.responsableId());
     }
 
-    /**
-     * Verifica que se pueda marcar como atendida.
-     */
     @Test
     void marcarAtendida_funciona() {
-        UsuarioReferencia solicitante = new UsuarioReferencia(UUID.randomUUID(), "Solicitante");
+        UUID solicitanteId = UUID.randomUUID();
+        UUID coordinadorId = UUID.randomUUID();
+        UUID docenteId = UUID.randomUUID();
         DescripcionSolicitud desc = new DescripcionSolicitud("Descripcion valida para la solicitud");
-        Solicitud s = Solicitud.crear(solicitante, CanalOrigen.CSU, desc);
-        UsuarioReferencia coordinador = new UsuarioReferencia(UUID.randomUUID(), "Coordinador");
-        s.clasificar(TipoSolicitud.HOMOLOGACION, coordinador);
-        
-        UsuarioReferencia docenteRef = new UsuarioReferencia(UUID.randomUUID(), "Docente");
-        s.asignarResponsable(docenteRef, coordinador);
-        s.marcarAtendida(docenteRef, "Solicitud atendida");
+        Solicitud s = Solicitud.crear(solicitanteId, "Solicitante", CanalOrigen.PRESENCIAL, desc, historialService);
+        s.clasificar(TipoSolicitud.PETICION, coordinadorId, "Coordinador");
+        s.asignarResponsable(docenteId, "Docente", coordinadorId, "Coordinador");
+        s.marcarAtendida(docenteId, "Docente", "Solicitud atendida");
         assertEquals(EstadoSolicitud.ATENDIDA, s.estado());
     }
 
-    /**
-     * Verifica que se pueda cerrar una solicitud.
-     */
     @Test
     void cerrar_funciona() {
-        UsuarioReferencia solicitante = new UsuarioReferencia(UUID.randomUUID(), "Solicitante");
+        UUID solicitanteId = UUID.randomUUID();
+        UUID coordinadorId = UUID.randomUUID();
+        UUID docenteId = UUID.randomUUID();
         DescripcionSolicitud desc = new DescripcionSolicitud("Descripcion valida para la solicitud");
-        Solicitud s = Solicitud.crear(solicitante, CanalOrigen.CSU, desc);
-        UsuarioReferencia coordinador = new UsuarioReferencia(UUID.randomUUID(), "Coordinador");
-        s.clasificar(TipoSolicitud.HOMOLOGACION, coordinador);
-        
-        UsuarioReferencia docenteRef = new UsuarioReferencia(UUID.randomUUID(), "Docente");
-        s.asignarResponsable(docenteRef, coordinador);
-        s.marcarAtendida(docenteRef, "Solicitud atendida");
-        s.cerrar(docenteRef, "Cierre de la solicitud");
+        Solicitud s = Solicitud.crear(solicitanteId, "Solicitante", CanalOrigen.PRESENCIAL, desc, historialService);
+        s.clasificar(TipoSolicitud.PETICION, coordinadorId, "Coordinador");
+        s.asignarResponsable(docenteId, "Docente", coordinadorId, "Coordinador");
+        s.marcarAtendida(docenteId, "Docente", "Solicitud atendida");
+        s.cerrar(docenteId, "Docente", "Cierre de la solicitud");
         assertEquals(EstadoSolicitud.CERRADA, s.estado());
     }
 }

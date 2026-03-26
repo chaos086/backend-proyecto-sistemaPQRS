@@ -1,8 +1,8 @@
-package co.edu.uniquindio.proyecto.domain.valueObject.enums;
+package co.edu.uniquindio.proyecto.domain.valueobject.enums;
 
 public enum Rol {
     ESTUDIANTE,
-    COORDINADOR,
-    DOCENTE
-
+    PROFESOR,
+    ADMINISTRATIVO,
+    COORDINADOR
 }

@@ -1,19 +1,23 @@
-package co.edu.uniquindio.proyecto.domain.valueObject;
+package co.edu.uniquindio.proyecto.domain.valueobject;
 
 import co.edu.uniquindio.proyecto.domain.exception.DomainException;
+import java.util.regex.Pattern;
 
-/**
- * Value Object que representa un correo electrónico.
- * Valida que el formato del email sea correcto.
- *
- */
-public record Email(String value) {
+public record Email(String valor) {
+
+    private static final Pattern EMAIL_PATTERN = Pattern.compile(
+        "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$"
+    );
+
     public Email {
-        if (value == null || value.isBlank()) {
+        if (valor == null || valor.isBlank()) {
             throw new DomainException("El email es obligatorio");
         }
-        if (!value.matches("^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$")) {
+        if (!EMAIL_PATTERN.matcher(valor).matches()) {
             throw new DomainException("El formato del email es inválido");
         }
+    }
+    public static Email of(String email) {
+        return new Email(email);
     }
 }

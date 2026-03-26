@@ -1,14 +1,24 @@
-package co.edu.uniquindio.proyecto.domain.valueObject;
+package co.edu.uniquindio.proyecto.domain.valueobject;
 
-import co.edu.uniquindio.proyecto.domain.exception.DomainException;
 import java.util.UUID;
 
-public record SolicitudId(UUID value) {
+public record SolicitudId(String valor) {
+
     public SolicitudId {
-        if (value == null) throw new DomainException("SolicitudId no puede ser null");
+        if (valor == null || valor.isBlank()) {
+            throw new IllegalArgumentException("El ID de solicitud no puede ser null o vacío");
+        }
+    }
+
+    public static SolicitudId of(String id) {
+        return new SolicitudId(id);
+    }
+
+    public static SolicitudId of(UUID uuid) {
+        return new SolicitudId(uuid.toString());
     }
 
     public static SolicitudId newId() {
-        return new SolicitudId(UUID.randomUUID());
+        return new SolicitudId(UUID.randomUUID().toString());
     }
 }

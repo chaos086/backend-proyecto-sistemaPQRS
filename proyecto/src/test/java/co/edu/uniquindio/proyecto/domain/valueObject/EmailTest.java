@@ -1,45 +1,41 @@
-package co.edu.uniquindio.proyecto.domain.valueObject;
+package co.edu.uniquindio.proyecto.domain.valueobject;
 
 import co.edu.uniquindio.proyecto.domain.exception.DomainException;
 import org.junit.jupiter.api.Test;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 class EmailTest {
 
-    /**
-     * Verifica que un correo electrónico válido pueda crearse correctamente.
-     *
-     * GIVEN: una cadena que representa un correo electrónico con formato válido
-     * WHEN: se crea una instancia de Email
-     * THEN: el valor almacenado en el objeto coincide con el correo proporcionado
-     */
     @Test
-    void emailValido() {
-        Email email = new Email("usuario@uniquindio.edu.co");
-        assertEquals("usuario@uniquindio.edu.co", email.value());
+    void crearEmailValido() {
+        Email email = Email.of("test@uniquindio.edu.co");
+        assertNotNull(email);
+        assertEquals("test@uniquindio.edu.co", email.valor());
     }
 
-    /**
-     * Verifica que no sea posible crear un Email con un valor nulo.
-     *
-     * GIVEN: un valor nulo como correo electrónico
-     * WHEN: se intenta crear una instancia de Email
-     * THEN: se lanza una DomainException indicando que el correo no es válido
-     */
     @Test
-    void emailNuloLanzaExcepcion() {
-        assertThrows(DomainException.class, () -> new Email((String) null));
+    void crearEmailNuloDebeLanzarExcepcion() {
+        assertThrows(DomainException.class, () -> Email.of(null));
     }
 
-    /**
-     * Verifica que no se permita crear un Email con un formato inválido.
-     *
-     * GIVEN: una cadena que no cumple con el formato de un correo electrónico
-     * WHEN: se intenta crear una instancia de Email
-     * THEN: se lanza una DomainException indicando que el formato del correo es inválido
-     */
     @Test
-    void emailFormatoInvalidoLanzaExcepcion() {
-        assertThrows(DomainException.class, () -> new Email("usuario-invalido"));
+    void crearEmailVacioDebeLanzarExcepcion() {
+        assertThrows(DomainException.class, () -> Email.of(""));
+    }
+
+    @Test
+    void crearEmailSinArrobaDebeLanzarExcepcion() {
+        assertThrows(DomainException.class, () -> Email.of("testuniquindio.edu.co"));
+    }
+
+    @Test
+    void crearEmailSinDominioDebeLanzarExcepcion() {
+        assertThrows(DomainException.class, () -> Email.of("test@"));
+    }
+
+    @Test
+    void crearEmailConEspaciosDebeLanzarExcepcion() {
+        assertThrows(DomainException.class, () -> Email.of(" test@uniquindio.edu.co "));
     }
 }

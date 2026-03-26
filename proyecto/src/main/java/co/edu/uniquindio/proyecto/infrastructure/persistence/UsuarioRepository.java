@@ -1,7 +1,7 @@
 package co.edu.uniquindio.proyecto.infrastructure.persistence;
 
 import co.edu.uniquindio.proyecto.domain.entity.Usuario;
-import co.edu.uniquindio.proyecto.domain.valueObject.IdentificacionUsuario;
+import co.edu.uniquindio.proyecto.domain.valueobject.IdentificacionUsuario;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
