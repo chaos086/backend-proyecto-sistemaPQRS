@@ -354,7 +354,7 @@ public record Email(String value) {
 | `AccionHistorial` | REGISTRAR_SOLICITUD, CLASIFICAR_SOLICITUD, PRIORIZAR_SOLICITUD, ASIGNAR_RESPONSABLE, MARCAR_ATENDIDA,CERRAR_SOLICITUD, se genera además de eso unos posibles enums para el uso de IA, los cuales son: SUGERENCIA_IA_GENERADA, SUGERENCIA_IA_CONFIRMADA, SUGERENCIA_IA_AJUSTADA, RESUMEN_IA_GENERADO |
 | `CanalOrigen`     | CSU, CORREO, SAC, TELEFONICO, PRESENCIAL                                                                                                                                                                                                                                                            |
 | `EstadoSolicitud` | REGISTRADA, CLASIFICADA, EN_ATENCION, ATENDIDA, CERRADA                                                                                                                                                                                                                                             |
-| `Prioridad`       | ALTA, MEDIA,                                                                                                                                                                                                                                                                                        |
+| `Prioridad`       | ALTA, MEDIA, BAJA |
 | `Rol`             | ESTUDIANTE, COORDINADOR, DOCENTE                                                                                                                                                                                                                                                                    |
 | `TipoSolicitud`   | REGISTRO_ASIGNATURAS,HOMOLOGACION, CANCELACION_ASIGNATURAS, SOLICITUD_CUPOS, CONSULTA_ACADEMICA                                                                                                                                                                                                     |
 
@@ -363,29 +363,66 @@ public record Email(String value) {
 
 ## 6. Pruebas Unitarias del Dominio
 
-El dominio cuenta con **18 pruebas unitarias** que validan las reglas de negocio:
+El dominio cuenta con **25+ pruebas unitarias** que validan las reglas de negocio, value objects y excepciones:
 
-### UsuarioTest (5 pruebas)
+### 6.1 Tests de Entidades
+
+#### UsuarioTest (8 pruebas)
 - ✅ crearUsuario_valido
 - ✅ crearUsuario_nombreNulo
 - ✅ crearUsuario_nombreBlanco
 - ✅ crearUsuario_rolNulo
 - ✅ crearUsuario_inactivo
+- ✅ desactivarUsuario
+- ✅ activarUsuario
+- ✅ agregarSolicitudRegistradaYVerificar
 
-### SolicitudTest (13 pruebas)
+#### SolicitudTest (9 pruebas)
 - ✅ crearSolicitud_valida
 - ✅ crearSolicitud_solicitanteNulo
 - ✅ crearSolicitud_canalNulo
-- ✅ clasificar_enEstadoRegistrada
-- ✅ clasificar_estadoIncorrecto
-- ✅ priorizar_enEstadoClasificada
-- ✅ asignarResponsable_estadoClasificada
-- ✅ asignarResponsable_usuarioInactivo
-- ✅ asignarResponsable_estadoIncorrecto
-- ✅ marcarAtendida_estadoEnAtencion
-- ✅ cerrar_estadoAtendida
-- ✅ cerrar_estadoIncorrecto
 - ✅ estadoInicial_registrada
+- ✅ clasificar_enEstadoRegistrada
+- ✅ priorizar_enEstadoClasificada
+- ✅ asignarResponsable_funciona
+- ✅ marcarAtendida_funciona
+- ✅ cerrar_funciona
+
+#### EntradaHistorialTest (1 prueba)
+- ✅ crearEntradaHistorial_valida
+
+### 6.2 Tests de Value Objects
+
+#### EmailTest
+- ✅ crearEmail_valido
+- ✅ crearEmail_nulo
+- ✅ crearEmail_formatoInvalido
+
+#### IdentificacionUsuarioTest
+- ✅ crearIdentificacion_valida
+- ✅ newId_generaUUID
+
+#### DescripcionSolicitudTest
+- ✅ crearDescripcion_valida
+- ✅ crearDescripcion_muyCorta
+- ✅ crearDescripcion_muyLarga
+
+#### JustificacionPrioridadTest
+- ✅ crearJustificacion_valida
+- ✅ crearJustificacion_muyCorta
+
+#### SolicitudIdTest
+- ✅ newId_generaUUID
+
+### 6.3 Tests de Excepciones
+
+#### DomainExceptionTest
+- ✅ mensaje_sePreserva
+
+#### BusinessRuleViolationTest
+- ✅ mensaje_sePreserva
+
+**Total: 25 pruebas unitarias**
 
 ---
 
@@ -426,6 +463,7 @@ El dominio cuenta con **18 pruebas unitarias** que validan las reglas de negocio
 | Fecha | Versión | Descripción |
 |-------|---------|-------------|
 | Marzo 2026 | 1.0 | Versión inicial del documento |
+| Marzo 2026 | 1.1 | Actualización: Agregado BAJA a Prioridad. Actualizado conteo de tests unitarios (25+). Documentados todos los tests de entidades, value objects y excepciones. |
 
 ---
 
