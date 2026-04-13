@@ -4,11 +4,14 @@ import co.edu.uniquindio.proyecto.application.UsuarioApplicationService;
 import co.edu.uniquindio.proyecto.domain.entity.Usuario;
 import co.edu.uniquindio.proyecto.domain.valueobject.IdentificacionUsuario;
 import co.edu.uniquindio.proyecto.domain.valueobject.enums.Rol;
+import co.edu.uniquindio.proyecto.infrastructure.api.dto.CrearUsuarioRequest;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 /**
@@ -24,6 +27,7 @@ import java.util.UUID;
  */
 @RestController
 @RequestMapping("/api/usuarios")
+@Tag(name = "Usuarios", description = "API para la gestión de usuarios del sistema PQRS")
 public class UsuarioController {
 
     private final UsuarioApplicationService usuarioService;
@@ -34,18 +38,15 @@ public class UsuarioController {
 
     /**
      * Crea un nuevo usuario en el sistema.
-     * @param payload Mapa con los datos del usuario (nombre, rol, email)
+     * @param request DTO con los datos del usuario
      * @return Usuario creado
      */
     @PostMapping
-    public ResponseEntity<Usuario> crearUsuario(@RequestBody Map<String, Object> payload) {
-        String nombre = (String) payload.get("nombre");
-        String rolStr = (String) payload.get("rol");
-        String email = (String) payload.get("email");
-        
-        Rol rol = Rol.valueOf(rolStr.toUpperCase());
+    @Operation(summary = "Crear usuario", description = "Crea un nuevo usuario en el sistema PQRS")
+    public ResponseEntity<Usuario> crearUsuario(@Valid @RequestBody CrearUsuarioRequest request) {
+        Rol rol = Rol.valueOf(request.rol().toUpperCase());
 
-        Usuario usuario = usuarioService.crearUsuario(nombre, rol, email);
+        Usuario usuario = usuarioService.crearUsuario(request.nombre(), rol, request.email());
         return ResponseEntity.ok(usuario);
     }
 
@@ -54,6 +55,7 @@ public class UsuarioController {
      * @return Lista de usuarios
      */
     @GetMapping
+    @Operation(summary = "Listar usuarios", description = "Obtiene todos los usuarios registrados en el sistema")
     public ResponseEntity<List<Usuario>> listarUsuarios() {
         return ResponseEntity.ok(usuarioService.listarUsuarios());
     }
@@ -63,6 +65,7 @@ public class UsuarioController {
      * @param id UUID del usuario a activar
      */
     @PutMapping("/{id}/activar")
+    @Operation(summary = "Activar usuario", description = "Activa un usuario existente en el sistema")
     public ResponseEntity<Void> activarUsuario(@PathVariable UUID id) {
         IdentificacionUsuario identificacion = IdentificacionUsuario.of(id);
         usuarioService.activarUsuario(identificacion);
@@ -74,6 +77,7 @@ public class UsuarioController {
      * @param id UUID del usuario a desactivar
      */
     @PutMapping("/{id}/desactivar")
+    @Operation(summary = "Desactivar usuario", description = "Desactiva un usuario existente en el sistema")
     public ResponseEntity<Void> desactivarUsuario(@PathVariable UUID id) {
         IdentificacionUsuario identificacion = IdentificacionUsuario.of(id);
         usuarioService.desactivarUsuario(identificacion);
@@ -86,6 +90,7 @@ public class UsuarioController {
      * @return Usuario encontrado
      */
     @GetMapping("/{id}")
+    @Operation(summary = "Obtener usuario", description = "Obtiene un usuario por su identificador")
     public ResponseEntity<Usuario> obtenerUsuario(@PathVariable UUID id) {
         IdentificacionUsuario identificacion = IdentificacionUsuario.of(id);
         Usuario usuario = usuarioService.obtenerUsuario(identificacion);

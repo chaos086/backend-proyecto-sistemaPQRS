@@ -1,6 +1,5 @@
 package co.edu.uniquindio.proyecto.domain.entity;
 
-import co.edu.uniquindio.proyecto.domain.exception.BusinessRuleViolation;
 import co.edu.uniquindio.proyecto.domain.exception.DomainException;
 import co.edu.uniquindio.proyecto.domain.service.HistorialService;
 import co.edu.uniquindio.proyecto.domain.valueobject.SolicitudId;
@@ -80,7 +79,7 @@ public class Solicitud {
         if (nombreCoordinador == null || nombreCoordinador.isBlank()) throw new DomainException("Nombre del coordinador es obligatorio");
 
         if (this.estado != EstadoSolicitud.REGISTRADA) {
-            throw new BusinessRuleViolation("Solo se puede clasificar una solicitud en estado REGISTRADA");
+            throw new DomainException("Solo se puede clasificar una solicitud en estado REGISTRADA");
         }
 
         this.tipoSolicitud = tipo;
