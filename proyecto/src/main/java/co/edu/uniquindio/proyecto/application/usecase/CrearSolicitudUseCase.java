@@ -10,6 +10,7 @@ import co.edu.uniquindio.proyecto.domain.service.SolicitudDomainService;
 import co.edu.uniquindio.proyecto.domain.valueobject.DescripcionSolicitud;
 import co.edu.uniquindio.proyecto.domain.valueobject.IdentificacionUsuario;
 import co.edu.uniquindio.proyecto.domain.valueobject.enums.CanalOrigen;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.UUID;
@@ -19,6 +20,7 @@ import java.util.UUID;
  * Orquesta la consulta del solicitante, la validación de reglas del dominio
  * y la persistencia de la solicitud creada.
  */
+@Service
 public class CrearSolicitudUseCase {
 
     private final SolicitudRepository solicitudRepository;

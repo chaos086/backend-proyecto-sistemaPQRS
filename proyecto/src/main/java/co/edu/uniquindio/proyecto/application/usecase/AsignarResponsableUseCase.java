@@ -8,6 +8,7 @@ import co.edu.uniquindio.proyecto.domain.repository.UsuarioRepository;
 import co.edu.uniquindio.proyecto.domain.service.SolicitudDomainService;
 import co.edu.uniquindio.proyecto.domain.valueobject.IdentificacionUsuario;
 import co.edu.uniquindio.proyecto.domain.valueobject.SolicitudId;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.UUID;
@@ -16,6 +17,7 @@ import java.util.UUID;
  * Caso de uso responsable de asignar un profesor como responsable de una
  * solicitud previamente clasificada.
  */
+@Service
 public class AsignarResponsableUseCase {
 
     private final SolicitudRepository solicitudRepository;

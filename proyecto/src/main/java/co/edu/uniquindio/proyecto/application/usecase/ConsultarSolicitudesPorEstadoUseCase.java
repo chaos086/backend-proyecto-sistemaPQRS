@@ -3,12 +3,14 @@ package co.edu.uniquindio.proyecto.application.usecase;
 import co.edu.uniquindio.proyecto.domain.entity.Solicitud;
 import co.edu.uniquindio.proyecto.domain.repository.SolicitudRepository;
 import co.edu.uniquindio.proyecto.domain.valueobject.enums.EstadoSolicitud;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 /**
  * Caso de uso para consultar solicitudes según su estado actual.
  */
+@Service
 public class ConsultarSolicitudesPorEstadoUseCase {
 
     private final SolicitudRepository solicitudRepository;

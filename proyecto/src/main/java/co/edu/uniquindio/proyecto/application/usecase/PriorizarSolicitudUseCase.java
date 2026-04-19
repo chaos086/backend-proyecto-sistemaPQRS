@@ -7,22 +7,24 @@ import co.edu.uniquindio.proyecto.domain.repository.SolicitudRepository;
 import co.edu.uniquindio.proyecto.domain.repository.UsuarioRepository;
 import co.edu.uniquindio.proyecto.domain.service.SolicitudDomainService;
 import co.edu.uniquindio.proyecto.domain.valueobject.IdentificacionUsuario;
+import co.edu.uniquindio.proyecto.domain.valueobject.JustificacionPrioridad;
 import co.edu.uniquindio.proyecto.domain.valueobject.SolicitudId;
+import co.edu.uniquindio.proyecto.domain.valueobject.enums.Prioridad;
 import org.springframework.stereotype.Service;
 
 import java.util.UUID;
 
 /**
- * Caso de uso encargado de cerrar una solicitud previamente atendida.
+ * Caso de uso encargado de priorizar una solicitud previamente clasificada.
  */
 @Service
-public class CerrarSolicitudUseCase {
+public class PriorizarSolicitudUseCase {
 
     private final SolicitudRepository solicitudRepository;
     private final UsuarioRepository usuarioRepository;
     private final SolicitudDomainService solicitudDomainService;
 
-    public CerrarSolicitudUseCase(
+    public PriorizarSolicitudUseCase(
             SolicitudRepository solicitudRepository,
             UsuarioRepository usuarioRepository,
             SolicitudDomainService solicitudDomainService) {
@@ -32,22 +34,23 @@ public class CerrarSolicitudUseCase {
     }
 
     /**
-     * Ejecuta el cierre de una solicitud.
+     * Ejecuta la priorización de una solicitud.
      *
      * @param solicitudId identificador de la solicitud
-     * @param responsableId identificador del usuario que realiza el cierre
-     * @param observacionCierre observación final de cierre
+     * @param prioridad prioridad asignada
+     * @param justificacion justificación de la prioridad
+     * @param coordinadorId identificador del coordinador que prioriza
      * @return solicitud actualizada y almacenada
      */
-    public Solicitud ejecutar(UUID solicitudId, UUID responsableId, String observacionCierre) {
+    public Solicitud ejecutar(UUID solicitudId, Prioridad prioridad, String justificacion, UUID coordinadorId) {
         Solicitud solicitud = solicitudRepository.buscarPorId(SolicitudId.of(solicitudId))
                 .orElseThrow(() -> new DomainException("Solicitud no encontrada"));
 
-        Usuario responsable = usuarioRepository.buscarPorId(IdentificacionUsuario.of(responsableId))
-                .orElseThrow(() -> new DomainException("Responsable no encontrado"));
+        Usuario coordinador = usuarioRepository.buscarPorId(IdentificacionUsuario.of(coordinadorId))
+                .orElseThrow(() -> new DomainException("Coordinador no encontrado"));
 
-        solicitudDomainService.validarCerrar(solicitud);
-        solicitud.cerrar(responsableId, responsable.nombre(), observacionCierre);
+        solicitudDomainService.validarPriorizar(solicitud);
+        solicitud.priorizar(prioridad, new JustificacionPrioridad(justificacion), coordinadorId, coordinador.nombre());
 
         return solicitudRepository.guardar(solicitud);
     }

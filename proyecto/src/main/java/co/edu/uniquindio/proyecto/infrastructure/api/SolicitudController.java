@@ -1,14 +1,28 @@
 package co.edu.uniquindio.proyecto.infrastructure.api;
 
-import co.edu.uniquindio.proyecto.application.SolicitudApplicationService;
+import co.edu.uniquindio.proyecto.application.usecase.AsignarResponsableUseCase;
+import co.edu.uniquindio.proyecto.application.usecase.CambiarEstadoUseCase;
+import co.edu.uniquindio.proyecto.application.usecase.CerrarSolicitudUseCase;
+import co.edu.uniquindio.proyecto.application.usecase.ClasificarSolicitudUseCase;
+import co.edu.uniquindio.proyecto.application.usecase.ConsultarSolicitudesPorEstadoUseCase;
+import co.edu.uniquindio.proyecto.application.usecase.CrearSolicitudUseCase;
+import co.edu.uniquindio.proyecto.application.usecase.ListarSolicitudesPorSolicitanteUseCase;
+import co.edu.uniquindio.proyecto.application.usecase.ListarSolicitudesUseCase;
+import co.edu.uniquindio.proyecto.application.usecase.ObtenerSolicitudUseCase;
+import co.edu.uniquindio.proyecto.application.usecase.PriorizarSolicitudUseCase;
 import co.edu.uniquindio.proyecto.domain.entity.Solicitud;
-import co.edu.uniquindio.proyecto.domain.valueobject.enums.CanalOrigen;
-import co.edu.uniquindio.proyecto.domain.valueobject.enums.Prioridad;
-import co.edu.uniquindio.proyecto.domain.valueobject.enums.TipoSolicitud;
-import co.edu.uniquindio.proyecto.infrastructure.api.dto.*;
+import co.edu.uniquindio.proyecto.infrastructure.api.dto.AsignarResponsableRequest;
+import co.edu.uniquindio.proyecto.infrastructure.api.dto.AtenderRequest;
+import co.edu.uniquindio.proyecto.infrastructure.api.dto.CerrarRequest;
+import co.edu.uniquindio.proyecto.infrastructure.api.dto.ClasificarRequest;
+import co.edu.uniquindio.proyecto.infrastructure.api.dto.CrearSolicitudRequest;
+import co.edu.uniquindio.proyecto.infrastructure.api.dto.PriorizarRequest;
+import co.edu.uniquindio.proyecto.infrastructure.api.dto.SolicitudResponse;
+import co.edu.uniquindio.proyecto.infrastructure.api.mapper.SolicitudRestMapper;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -35,10 +49,41 @@ import java.util.UUID;
 @Tag(name = "Solicitudes", description = "API para la gestión del ciclo de vida de solicitudes PQRS")
 public class SolicitudController {
 
-    private final SolicitudApplicationService solicitudService;
+    private final CrearSolicitudUseCase crearSolicitudUseCase;
+    private final ClasificarSolicitudUseCase clasificarSolicitudUseCase;
+    private final PriorizarSolicitudUseCase priorizarSolicitudUseCase;
+    private final AsignarResponsableUseCase asignarResponsableUseCase;
+    private final CambiarEstadoUseCase cambiarEstadoUseCase;
+    private final CerrarSolicitudUseCase cerrarSolicitudUseCase;
+    private final ObtenerSolicitudUseCase obtenerSolicitudUseCase;
+    private final ListarSolicitudesUseCase listarSolicitudesUseCase;
+    private final ListarSolicitudesPorSolicitanteUseCase listarSolicitudesPorSolicitanteUseCase;
+    private final ConsultarSolicitudesPorEstadoUseCase consultarSolicitudesPorEstadoUseCase;
+    private final SolicitudRestMapper solicitudRestMapper;
 
-    public SolicitudController(SolicitudApplicationService solicitudService) {
-        this.solicitudService = solicitudService;
+    public SolicitudController(
+            CrearSolicitudUseCase crearSolicitudUseCase,
+            ClasificarSolicitudUseCase clasificarSolicitudUseCase,
+            PriorizarSolicitudUseCase priorizarSolicitudUseCase,
+            AsignarResponsableUseCase asignarResponsableUseCase,
+            CambiarEstadoUseCase cambiarEstadoUseCase,
+            CerrarSolicitudUseCase cerrarSolicitudUseCase,
+            ObtenerSolicitudUseCase obtenerSolicitudUseCase,
+            ListarSolicitudesUseCase listarSolicitudesUseCase,
+            ListarSolicitudesPorSolicitanteUseCase listarSolicitudesPorSolicitanteUseCase,
+            ConsultarSolicitudesPorEstadoUseCase consultarSolicitudesPorEstadoUseCase,
+            SolicitudRestMapper solicitudRestMapper) {
+        this.crearSolicitudUseCase = crearSolicitudUseCase;
+        this.clasificarSolicitudUseCase = clasificarSolicitudUseCase;
+        this.priorizarSolicitudUseCase = priorizarSolicitudUseCase;
+        this.asignarResponsableUseCase = asignarResponsableUseCase;
+        this.cambiarEstadoUseCase = cambiarEstadoUseCase;
+        this.cerrarSolicitudUseCase = cerrarSolicitudUseCase;
+        this.obtenerSolicitudUseCase = obtenerSolicitudUseCase;
+        this.listarSolicitudesUseCase = listarSolicitudesUseCase;
+        this.listarSolicitudesPorSolicitanteUseCase = listarSolicitudesPorSolicitanteUseCase;
+        this.consultarSolicitudesPorEstadoUseCase = consultarSolicitudesPorEstadoUseCase;
+        this.solicitudRestMapper = solicitudRestMapper;
     }
 
     /**
@@ -48,14 +93,14 @@ public class SolicitudController {
      */
     @PostMapping
     @Operation(summary = "Crear solicitud", description = "Crea una nueva solicitud PQRS en el sistema")
-    public ResponseEntity<Solicitud> crearSolicitud(@Valid @RequestBody CrearSolicitudRequest request) {
-        UUID solicitanteId = UUID.fromString(request.solicitanteId());
-        CanalOrigen canalOrigen = CanalOrigen.valueOf(request.canalOrigen().toUpperCase());
-
-        Solicitud solicitud = solicitudService.crearSolicitud(
-                solicitanteId, request.nombreSolicitante(), canalOrigen, request.descripcion()
+    public ResponseEntity<SolicitudResponse> crearSolicitud(@Valid @RequestBody CrearSolicitudRequest request) {
+        Solicitud solicitud = crearSolicitudUseCase.ejecutar(
+                solicitudRestMapper.toUuid(request.solicitanteId()),
+                request.nombreSolicitante(),
+                solicitudRestMapper.toCanalOrigen(request.canalOrigen()),
+                request.descripcion()
         );
-        return ResponseEntity.ok(solicitud);
+        return ResponseEntity.status(HttpStatus.CREATED).body(solicitudRestMapper.toResponse(solicitud));
     }
 
     /**
@@ -64,8 +109,23 @@ public class SolicitudController {
      */
     @GetMapping
     @Operation(summary = "Listar solicitudes", description = "Obtiene todas las solicitudes del sistema")
-    public ResponseEntity<List<Solicitud>> listarSolicitudes() {
-        return ResponseEntity.ok(solicitudService.listarSolicitudes());
+    public ResponseEntity<List<SolicitudResponse>> listarSolicitudes() {
+        return ResponseEntity.ok(solicitudRestMapper.toResponseList(listarSolicitudesUseCase.ejecutar()));
+    }
+
+    /**
+     * Lista las solicitudes filtradas por estado.
+     * @param estado estado actual de la solicitud
+     * @return Lista de solicitudes filtradas
+     */
+    @GetMapping("/estado/{estado}")
+    @Operation(summary = "Listar por estado", description = "Obtiene las solicitudes filtradas por estado")
+    public ResponseEntity<List<SolicitudResponse>> listarPorEstado(@PathVariable String estado) {
+        return ResponseEntity.ok(
+                solicitudRestMapper.toResponseList(
+                        consultarSolicitudesPorEstadoUseCase.ejecutar(solicitudRestMapper.toEstadoSolicitud(estado))
+                )
+        );
     }
 
     /**
@@ -75,8 +135,10 @@ public class SolicitudController {
      */
     @GetMapping("/solicitante/{solicitanteId}")
     @Operation(summary = "Listar por solicitante", description = "Obtiene las solicitudes de un solicitante específico")
-    public ResponseEntity<List<Solicitud>> listarPorSolicitante(@PathVariable UUID solicitanteId) {
-        return ResponseEntity.ok(solicitudService.listarSolicitudesPorSolicitante(solicitanteId));
+    public ResponseEntity<List<SolicitudResponse>> listarPorSolicitante(@PathVariable UUID solicitanteId) {
+        return ResponseEntity.ok(
+                solicitudRestMapper.toResponseList(listarSolicitudesPorSolicitanteUseCase.ejecutar(solicitanteId))
+        );
     }
 
     /**
@@ -88,11 +150,13 @@ public class SolicitudController {
      */
     @PutMapping("/{id}/clasificar")
     @Operation(summary = "Clasificar solicitud", description = "Clasifica una solicitud con un tipo específico (coordinador)")
-    public ResponseEntity<Solicitud> clasificar(@PathVariable UUID id, @Valid @RequestBody ClasificarRequest request) {
-        TipoSolicitud tipo = TipoSolicitud.valueOf(request.tipo().toUpperCase());
-        UUID coordinadorId = UUID.fromString(request.coordinadorId());
-        Solicitud solicitud = solicitudService.clasificarSolicitud(id, tipo, coordinadorId);
-        return ResponseEntity.ok(solicitud);
+    public ResponseEntity<SolicitudResponse> clasificar(@PathVariable UUID id, @Valid @RequestBody ClasificarRequest request) {
+        Solicitud solicitud = clasificarSolicitudUseCase.ejecutar(
+                id,
+                solicitudRestMapper.toTipoSolicitud(request.tipo()),
+                solicitudRestMapper.toUuid(request.coordinadorId())
+        );
+        return ResponseEntity.ok(solicitudRestMapper.toResponse(solicitud));
     }
 
     /**
@@ -104,11 +168,14 @@ public class SolicitudController {
      */
     @PutMapping("/{id}/priorizar")
     @Operation(summary = "Priorizar solicitud", description = "Asigna una prioridad a la solicitud (coordinador)")
-    public ResponseEntity<Solicitud> priorizar(@PathVariable UUID id, @Valid @RequestBody PriorizarRequest request) {
-        Prioridad prioridad = Prioridad.valueOf(request.prioridad().toUpperCase());
-        UUID coordinadorId = UUID.fromString(request.coordinadorId());
-        Solicitud solicitud = solicitudService.priorizarSolicitud(id, prioridad, request.justificacion(), coordinadorId);
-        return ResponseEntity.ok(solicitud);
+    public ResponseEntity<SolicitudResponse> priorizar(@PathVariable UUID id, @Valid @RequestBody PriorizarRequest request) {
+        Solicitud solicitud = priorizarSolicitudUseCase.ejecutar(
+                id,
+                solicitudRestMapper.toPrioridad(request.prioridad()),
+                request.justificacion(),
+                solicitudRestMapper.toUuid(request.coordinadorId())
+        );
+        return ResponseEntity.ok(solicitudRestMapper.toResponse(solicitud));
     }
 
     /**
@@ -120,12 +187,13 @@ public class SolicitudController {
      */
     @PutMapping("/{id}/asignar-responsable")
     @Operation(summary = "Asignar responsable", description = "Asigna un profesor como responsable de la solicitud (coordinador)")
-    public ResponseEntity<Solicitud> asignarResponsable(@PathVariable UUID id, @Valid @RequestBody AsignarResponsableRequest request) {
-        UUID responsableId = UUID.fromString(request.responsableId());
-        UUID coordinadorId = UUID.fromString(request.coordinadorId());
-
-        Solicitud solicitud = solicitudService.asignarResponsable(id, responsableId, coordinadorId);
-        return ResponseEntity.ok(solicitud);
+    public ResponseEntity<SolicitudResponse> asignarResponsable(@PathVariable UUID id, @Valid @RequestBody AsignarResponsableRequest request) {
+        Solicitud solicitud = asignarResponsableUseCase.ejecutar(
+                id,
+                solicitudRestMapper.toUuid(request.responsableId()),
+                solicitudRestMapper.toUuid(request.coordinadorId())
+        );
+        return ResponseEntity.ok(solicitudRestMapper.toResponse(solicitud));
     }
 
     /**
@@ -137,11 +205,13 @@ public class SolicitudController {
      */
     @PutMapping("/{id}/atender")
     @Operation(summary = "Marcar atendida", description = "Marca la solicitud como atendida (profesor)")
-    public ResponseEntity<Solicitud> marcarAtendida(@PathVariable UUID id, @Valid @RequestBody AtenderRequest request) {
-        UUID responsableId = UUID.fromString(request.responsableId());
-
-        Solicitud solicitud = solicitudService.marcarAtendida(id, responsableId, request.observacion());
-        return ResponseEntity.ok(solicitud);
+    public ResponseEntity<SolicitudResponse> marcarAtendida(@PathVariable UUID id, @Valid @RequestBody AtenderRequest request) {
+        Solicitud solicitud = cambiarEstadoUseCase.ejecutar(
+                id,
+                solicitudRestMapper.toUuid(request.responsableId()),
+                request.observacion()
+        );
+        return ResponseEntity.ok(solicitudRestMapper.toResponse(solicitud));
     }
 
     /**
@@ -153,11 +223,13 @@ public class SolicitudController {
      */
     @PutMapping("/{id}/cerrar")
     @Operation(summary = "Cerrar solicitud", description = "Cierra la solicitud con una observación final (profesor)")
-    public ResponseEntity<Solicitud> cerrar(@PathVariable UUID id, @Valid @RequestBody CerrarRequest request) {
-        UUID responsableId = UUID.fromString(request.responsableId());
-
-        Solicitud solicitud = solicitudService.cerrarSolicitud(id, responsableId, request.observacionCierre());
-        return ResponseEntity.ok(solicitud);
+    public ResponseEntity<SolicitudResponse> cerrar(@PathVariable UUID id, @Valid @RequestBody CerrarRequest request) {
+        Solicitud solicitud = cerrarSolicitudUseCase.ejecutar(
+                id,
+                solicitudRestMapper.toUuid(request.responsableId()),
+                request.observacionCierre()
+        );
+        return ResponseEntity.ok(solicitudRestMapper.toResponse(solicitud));
     }
 
     /**
@@ -167,8 +239,20 @@ public class SolicitudController {
      */
     @GetMapping("/{id}")
     @Operation(summary = "Obtener solicitud", description = "Obtiene una solicitud por su identificador")
-    public ResponseEntity<Solicitud> obtenerSolicitud(@PathVariable UUID id) {
-        Solicitud solicitud = solicitudService.obtenerSolicitud(id);
-        return ResponseEntity.ok(solicitud);
+    public ResponseEntity<SolicitudResponse> obtenerSolicitud(@PathVariable UUID id) {
+        Solicitud solicitud = obtenerSolicitudUseCase.ejecutar(id);
+        return ResponseEntity.ok(solicitudRestMapper.toResponse(solicitud));
+    }
+
+    /**
+     * Recupera el historial auditable de una solicitud específica.
+     * @param id UUID de la solicitud
+     * @return historial de eventos de la solicitud
+     */
+    @GetMapping("/{id}/historial")
+    @Operation(summary = "Consultar historial", description = "Obtiene el historial auditable de una solicitud")
+    public ResponseEntity<List<co.edu.uniquindio.proyecto.infrastructure.api.dto.EntradaHistorialResponse>> obtenerHistorial(@PathVariable UUID id) {
+        Solicitud solicitud = obtenerSolicitudUseCase.ejecutar(id);
+        return ResponseEntity.ok(solicitudRestMapper.toHistorialResponseList(solicitud.historial()));
     }
 }

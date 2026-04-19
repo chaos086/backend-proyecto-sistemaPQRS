@@ -6,6 +6,7 @@ import co.edu.uniquindio.proyecto.domain.valueobject.enums.EstadoSolicitud;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 /**
  * Contrato del dominio para el acceso y almacenamiento de solicitudes.
@@ -42,4 +43,12 @@ public interface SolicitudRepository {
      * @return lista de solicitudes filtradas
      */
     List<Solicitud> buscarPorEstado(EstadoSolicitud estado);
+
+    /**
+     * Recupera las solicitudes registradas por un solicitante específico.
+     *
+     * @param solicitanteId identificador del solicitante
+     * @return lista de solicitudes del solicitante
+     */
+    List<Solicitud> buscarPorSolicitanteId(UUID solicitanteId);
 }

@@ -8,6 +8,7 @@ import co.edu.uniquindio.proyecto.domain.repository.UsuarioRepository;
 import co.edu.uniquindio.proyecto.domain.service.SolicitudDomainService;
 import co.edu.uniquindio.proyecto.domain.valueobject.IdentificacionUsuario;
 import co.edu.uniquindio.proyecto.domain.valueobject.SolicitudId;
+import org.springframework.stereotype.Service;
 
 import java.util.UUID;
 
@@ -16,6 +17,7 @@ import java.util.UUID;
  * Este flujo utiliza las validaciones del dominio para garantizar que
  * solo el responsable asignado pueda completar la atención.
  */
+@Service
 public class CambiarEstadoUseCase {
 
     private final SolicitudRepository solicitudRepository;

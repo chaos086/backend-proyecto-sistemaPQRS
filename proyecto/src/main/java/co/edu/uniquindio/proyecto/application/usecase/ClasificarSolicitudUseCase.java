@@ -8,21 +8,22 @@ import co.edu.uniquindio.proyecto.domain.repository.UsuarioRepository;
 import co.edu.uniquindio.proyecto.domain.service.SolicitudDomainService;
 import co.edu.uniquindio.proyecto.domain.valueobject.IdentificacionUsuario;
 import co.edu.uniquindio.proyecto.domain.valueobject.SolicitudId;
+import co.edu.uniquindio.proyecto.domain.valueobject.enums.TipoSolicitud;
 import org.springframework.stereotype.Service;
 
 import java.util.UUID;
 
 /**
- * Caso de uso encargado de cerrar una solicitud previamente atendida.
+ * Caso de uso encargado de clasificar una solicitud registrada.
  */
 @Service
-public class CerrarSolicitudUseCase {
+public class ClasificarSolicitudUseCase {
 
     private final SolicitudRepository solicitudRepository;
     private final UsuarioRepository usuarioRepository;
     private final SolicitudDomainService solicitudDomainService;
 
-    public CerrarSolicitudUseCase(
+    public ClasificarSolicitudUseCase(
             SolicitudRepository solicitudRepository,
             UsuarioRepository usuarioRepository,
             SolicitudDomainService solicitudDomainService) {
@@ -32,22 +33,22 @@ public class CerrarSolicitudUseCase {
     }
 
     /**
-     * Ejecuta el cierre de una solicitud.
+     * Ejecuta la clasificación de una solicitud.
      *
      * @param solicitudId identificador de la solicitud
-     * @param responsableId identificador del usuario que realiza el cierre
-     * @param observacionCierre observación final de cierre
+     * @param tipo tipo asignado a la solicitud
+     * @param coordinadorId identificador del coordinador que clasifica
      * @return solicitud actualizada y almacenada
      */
-    public Solicitud ejecutar(UUID solicitudId, UUID responsableId, String observacionCierre) {
+    public Solicitud ejecutar(UUID solicitudId, TipoSolicitud tipo, UUID coordinadorId) {
         Solicitud solicitud = solicitudRepository.buscarPorId(SolicitudId.of(solicitudId))
                 .orElseThrow(() -> new DomainException("Solicitud no encontrada"));
 
-        Usuario responsable = usuarioRepository.buscarPorId(IdentificacionUsuario.of(responsableId))
-                .orElseThrow(() -> new DomainException("Responsable no encontrado"));
+        Usuario coordinador = usuarioRepository.buscarPorId(IdentificacionUsuario.of(coordinadorId))
+                .orElseThrow(() -> new DomainException("Coordinador no encontrado"));
 
-        solicitudDomainService.validarCerrar(solicitud);
-        solicitud.cerrar(responsableId, responsable.nombre(), observacionCierre);
+        solicitudDomainService.validarClasificar(solicitud);
+        solicitud.clasificar(tipo, coordinadorId, coordinador.nombre());
 
         return solicitudRepository.guardar(solicitud);
     }
