@@ -198,6 +198,77 @@ La aplicación estará disponible en: `http://localhost:8080`
 | Entrega | Estado | Porcentaje |
 |---------|--------|-------------|
 | Entrega #1 (Modelado + Comportamiento + Tests) | ✅ Completo | 100% |
+| Entrega #2 (Arquitectura + Persistencia + API REST + Seguridad) | ✅ Completo | 100% |
+
+---
+
+## Entrega #2: Arquitectura, Persistencia y Seguridad
+
+### Componentes Implementados
+
+#### Arquitectura DDD con Capas
+- **Domain Layer**: Entidades, Value Objects, Servicios de Dominio, Excepciones
+- **Application Layer**: UseCases (CASO DE USO), Application Services
+- **Infrastructure Layer**: Controllers REST, Repositorios, Mappers, Seguridad
+
+#### UseCases Implementados (15 total)
+| # | UseCase | Descripción |
+|---|--------|-------------|
+| 1 | CrearUsuarioUseCase | Crea un nuevo usuario en el sistema |
+| 2 | ObtenerUsuarioUseCase | Busca usuario por ID |
+| 3 | ListarUsuariosUseCase | Lista todos los usuarios |
+| 4 | ActivarUsuarioUseCase | Activa un usuario inactivo |
+| 5 | DesactivarUsuarioUseCase | Desactiva un usuario activo |
+| 6 | CrearSolicitudUseCase | Crea una nueva solicitud PQRS |
+| 7 | ObtenerSolicitudUseCase | Busca solicitud por ID |
+| 8 | ListarSolicitudesUseCase | Lista todas las solicitudes |
+| 9 | ListarSolicitudesPorSolicitanteUseCase | Lista solicitudes de un solicitante |
+| 10 | ConsultarSolicitudesPorEstadoUseCase | Filtra solicitudes por estado |
+| 11 | ClasificarSolicitudUseCase | Clasifica tipo de solicitud (coordinador) |
+| 12 | PriorizarSolicitudUseCase | Asigna prioridad (coordinador) |
+| 13 | AsignarResponsableUseCase | Asigna docente responsable |
+| 14 | CambiarEstadoUseCase | Cambia estado de la solicitud |
+| 15 | CerrarSolicitudUseCase | Cierra una solicitud |
+
+#### Persistencia H2
+- **Base de datos en memoria**: H2 configurada
+- **Repositorios**: Implementación dual con Switch de Perfiles
+  - `@Profile("memory")`: Repositorios InMemory (para testing)
+  - `@Profile("jpa")`: Repositorios JPA (para producción)
+- **Entidades JPA**: Mapeo completo con anotaciones Jakarta Persistence
+- **H2 Console**: Disponible en `/h2-console`
+
+#### API REST con Swagger/OpenAPI
+- **Documentación**: SpringDoc OpenAPI 3.0.3
+- **Swagger UI**: Disponible en `/swagger-ui.html`
+- **OpenAPI JSON**: Disponible en `/v3/api-docs`
+- **Validación**: Bean Validation con mensajes personalizados
+
+#### Seguridad JWT
+- **Autenticación**: Token JWT (Bearer)
+- **Filtro**: JwtAuthenticationFilter
+- **Servicio**: JwtService para generación y validación
+- **Configuración**: SecurityConfiguration con rutas públicas configuradas
+
+#### Controllers REST
+| Controller | Endpoints |
+|------------|-----------|
+| UsuarioController | CRUD de usuarios |
+| SolicitudController | Gestión completa de solicitudes PQRS |
+| AuthController | Login y generación de tokens JWT |
+
+#### DTOs y Mapeo
+- **DTOs**: 14 objetos para request/response
+- **Mappers**: MapStruct para transformación entidad ↔ DTO
+
+### Tecnologías Segunda Entrega
+- **Java**: 25
+- **Spring Boot**: 4.0.2
+- **Spring Security**: 6.x
+- **SpringDoc OpenAPI**: 3.0.3
+- **MapStruct**: 1.6.3
+- **H2 Database**: En memoria
+- **jjwt**: 0.12.5
 
 ---
 
