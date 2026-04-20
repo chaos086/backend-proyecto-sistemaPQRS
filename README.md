@@ -167,6 +167,12 @@ La aplicación estará disponible en: `http://localhost:8080`
 
 ## Endpoints de la API
 
+### Autenticación
+
+| Método | Endpoint | Descripción |
+|--------|----------|-------------|
+| POST | `/api/auth/login` | Iniciar sesión y obtener token JWT |
+
 ### Usuarios
 
 | Método | Endpoint | Descripción |
@@ -237,6 +243,50 @@ La aplicación estará disponible en: `http://localhost:8080`
   - `@Profile("jpa")`: Repositorios JPA (para producción)
 - **Entidades JPA**: Mapeo completo con anotaciones Jakarta Persistence
 - **H2 Console**: Disponible en `/h2-console`
+
+#### Acceso a Consola H2
+La consola H2 está habilitada para consultar la base de datos durante desarrollo:
+
+| Configuración | Valor |
+|---------------|------|
+| URL Consola | `http://localhost:8080/h2-console` |
+| JDBC URL | `jdbc:h2:mem:proyectodb` |
+| Username | `sa` |
+| Password | *(vacío)* |
+
+#### Credenciales Seed (Datos de Prueba Predefinidos)
+El sistema se inicia con usuarios de prueba para desarrollo:
+
+| Email | Password | Rol |
+|------|----------|-----|
+| `admin@uniquindio.edu.co` | `Admin#12345` | ADMIN |
+| `coordinador@uniquindio.edu.co` | `Coord#12345` | COORDINADOR |
+| `docente@uniquindio.edu.co` | `Docen#12345` | DOCENTE |
+| `estudiante@uniquindio.edu.co` | `Estu#12345` | ESTUDIANTE |
+
+#### Login JWT
+Para autenticarse en la API:
+
+```bash
+curl -X POST http://localhost:8080/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"admin@uniquindio.edu.co","password":"Admin#12345"}'
+```
+
+Respuesta:
+```json
+{
+  "accessToken": "eyJhbGciOiJIUzI1NiJ9...",
+  "tokenType": "Bearer",
+  "expiresInSeconds": 14400
+}
+```
+
+Para usar los endpoints protegidos, incluir el token en el header:
+```bash
+curl -X GET http://localhost:8080/api/usuarios \
+  -H "Authorization: Bearer <accessToken>"
+```
 
 #### API REST con Swagger/OpenAPI
 - **Documentación**: SpringDoc OpenAPI 3.0.3
