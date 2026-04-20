@@ -3,6 +3,8 @@ package co.edu.uniquindio.proyecto.application;
 import co.edu.uniquindio.proyecto.domain.entity.Solicitud;
 import co.edu.uniquindio.proyecto.domain.entity.Usuario;
 import co.edu.uniquindio.proyecto.domain.exception.DomainException;
+import co.edu.uniquindio.proyecto.domain.repository.SolicitudRepository;
+import co.edu.uniquindio.proyecto.domain.repository.UsuarioRepository;
 import co.edu.uniquindio.proyecto.domain.service.HistorialService;
 import co.edu.uniquindio.proyecto.domain.service.SolicitudDomainService;
 import co.edu.uniquindio.proyecto.domain.valueobject.IdentificacionUsuario;
@@ -12,8 +14,6 @@ import co.edu.uniquindio.proyecto.domain.valueobject.enums.Prioridad;
 import co.edu.uniquindio.proyecto.domain.valueobject.enums.TipoSolicitud;
 import co.edu.uniquindio.proyecto.domain.valueobject.DescripcionSolicitud;
 import co.edu.uniquindio.proyecto.domain.valueobject.JustificacionPrioridad;
-import co.edu.uniquindio.proyecto.infrastructure.persistence.SolicitudRepository;
-import co.edu.uniquindio.proyecto.infrastructure.persistence.UsuarioRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -41,17 +41,17 @@ public class SolicitudApplicationService {
     public Solicitud crearSolicitud(UUID solicitanteId, String nombreSolicitante, 
                                      CanalOrigen canalOrigen, String descripcion) {
         IdentificacionUsuario idSolicitante = IdentificacionUsuario.of(solicitanteId);
-        Usuario solicitante = usuarioRepository.findById(idSolicitante)
+        Usuario solicitante = usuarioRepository.buscarPorId(idSolicitante)
                 .orElseThrow(() -> new DomainException("Solicitante no encontrado"));
 
-        List<Solicitud> solicitudesExistentes = solicitudRepository.findAll();
+        List<Solicitud> solicitudesExistentes = solicitudRepository.buscarTodas();
         domainService.validarCrearSolicitud(solicitante, solicitudesExistentes);
 
         DescripcionSolicitud descripcionVO = new DescripcionSolicitud(descripcion);
 
         Solicitud solicitud = Solicitud.crear(solicitanteId, nombreSolicitante, canalOrigen, descripcionVO, historialService);
 
-        return solicitudRepository.save(solicitud);
+        return solicitudRepository.guardar(solicitud);
     }
 
     public Solicitud clasificarSolicitud(UUID solicitudId, TipoSolicitud tipo, UUID coordinadorId) {
@@ -60,7 +60,7 @@ public class SolicitudApplicationService {
         
         Usuario coordinador = obtenerUsuario(coordinadorId);
         solicitud.clasificar(tipo, coordinadorId, coordinador.nombre());
-        return solicitudRepository.save(solicitud);
+        return solicitudRepository.guardar(solicitud);
     }
 
     public Solicitud priorizarSolicitud(UUID solicitudId, Prioridad prioridad, 
@@ -71,22 +71,22 @@ public class SolicitudApplicationService {
         Usuario coordinador = obtenerUsuario(coordinadorId);
         JustificacionPrioridad justificacionVO = new JustificacionPrioridad(justificacion);
         solicitud.priorizar(prioridad, justificacionVO, coordinadorId, coordinador.nombre());
-        return solicitudRepository.save(solicitud);
+        return solicitudRepository.guardar(solicitud);
     }
 
-    public Solicitud asignarResponsable(UUID solicitudId, UUID responsableId, UUID coordinadorId) {
+    public Solicitud asignarResponsable(UUID solicitudId, UUID responsableId, UUID coordinatorId) {
         Solicitud solicitud = obtenerSolicitud(solicitudId);
         
         IdentificacionUsuario idResponsable = IdentificacionUsuario.of(responsableId);
-        Usuario responsable = usuarioRepository.findById(idResponsable)
+        Usuario responsable = usuarioRepository.buscarPorId(idResponsable)
                 .orElseThrow(() -> new DomainException("Responsable no encontrado"));
         
-        List<Solicitud> solicitudesExistentes = solicitudRepository.findAll();
+        List<Solicitud> solicitudesExistentes = solicitudRepository.buscarTodas();
         domainService.validarAsignarResponsable(solicitud, responsable, solicitudesExistentes);
         
-        Usuario coordinador = obtenerUsuario(coordinadorId);
-        solicitud.asignarResponsable(responsableId, responsable.nombre(), coordinadorId, coordinador.nombre());
-        return solicitudRepository.save(solicitud);
+        Usuario coordinador = obtenerUsuario(coordinatorId);
+        solicitud.asignarResponsable(responsableId, responsable.nombre(), coordinatorId, coordinador.nombre());
+        return solicitudRepository.guardar(solicitud);
     }
 
     public Solicitud marcarAtendida(UUID solicitudId, UUID responsableId, String observacion) {
@@ -95,7 +95,7 @@ public class SolicitudApplicationService {
         
         Usuario responsable = obtenerUsuario(responsableId);
         solicitud.marcarAtendida(responsableId, responsable.nombre(), observacion);
-        return solicitudRepository.save(solicitud);
+        return solicitudRepository.guardar(solicitud);
     }
 
     public Solicitud cerrarSolicitud(UUID solicitudId, UUID responsableId, String observacionCierre) {
@@ -104,26 +104,26 @@ public class SolicitudApplicationService {
         
         Usuario responsable = obtenerUsuario(responsableId);
         solicitud.cerrar(responsableId, responsable.nombre(), observacionCierre);
-        return solicitudRepository.save(solicitud);
+        return solicitudRepository.guardar(solicitud);
     }
 
     public Solicitud obtenerSolicitud(UUID solicitudId) {
         SolicitudId id = SolicitudId.of(solicitudId);
-        return solicitudRepository.findById(id)
+        return solicitudRepository.buscarPorId(id)
                 .orElseThrow(() -> new DomainException("Solicitud no encontrada"));
     }
 
     public List<Solicitud> listarSolicitudes() {
-        return solicitudRepository.findAll();
+        return solicitudRepository.buscarTodas();
     }
 
     public List<Solicitud> listarSolicitudesPorSolicitante(UUID solicitanteId) {
-        return solicitudRepository.findBySolicitanteId(solicitanteId);
+        return solicitudRepository.buscarPorSolicitanteId(solicitanteId);
     }
 
     private Usuario obtenerUsuario(UUID usuarioId) {
         IdentificacionUsuario id = IdentificacionUsuario.of(usuarioId);
-        return usuarioRepository.findById(id)
+        return usuarioRepository.buscarPorId(id)
                 .orElseThrow(() -> new DomainException("Usuario no encontrado"));
     }
 }

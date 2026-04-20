@@ -1,17 +1,15 @@
 package co.edu.uniquindio.proyecto.domain.valueobject;
 
 import co.edu.uniquindio.proyecto.domain.exception.DomainException;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.util.UUID;
 
 public record IdentificacionUsuario(String valor) {
 
-    public IdentificacionUsuario {
-        if (valor == null || valor.isBlank()) {
+    public static IdentificacionUsuario of(String identificacion) {
+        if (identificacion == null || identificacion.isBlank()) {
             throw new DomainException("La identificación del usuario es obligatoria");
         }
-    }
-
-    public static IdentificacionUsuario of(String identificacion) {
         return new IdentificacionUsuario(identificacion);
     }
 
@@ -21,5 +19,10 @@ public record IdentificacionUsuario(String valor) {
 
     public static IdentificacionUsuario newId() {
         return new IdentificacionUsuario(UUID.randomUUID().toString());
+    }
+    
+    @JsonIgnore
+    public String getValor() {
+        return valor;
     }
 }

@@ -8,32 +8,27 @@ import org.springframework.stereotype.Repository;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
-/**
- * Implementación en memoria del repositorio de usuarios para pruebas
- * manuales y escenarios simples sin base de datos.
- */
 @Repository
 public class InMemoryUsuarioRepository implements UsuarioRepository {
 
-    private final List<Usuario> usuarios = new ArrayList<>();
+    private final ConcurrentMap<String, Usuario> storage = new ConcurrentHashMap<>();
 
     @Override
     public Usuario guardar(Usuario usuario) {
-        buscarPorId(usuario.id()).ifPresent(usuarios::remove);
-        usuarios.add(usuario);
+        storage.put(usuario.id().valor(), usuario);
         return usuario;
     }
 
     @Override
     public Optional<Usuario> buscarPorId(IdentificacionUsuario id) {
-        return usuarios.stream()
-                .filter(usuario -> usuario.id().valor().equals(id.valor()))
-                .findFirst();
+        return Optional.ofNullable(storage.get(id.valor()));
     }
 
     @Override
     public List<Usuario> buscarTodos() {
-        return List.copyOf(usuarios);
+        return new ArrayList<>(storage.values());
     }
 }

@@ -1,16 +1,14 @@
 package co.edu.uniquindio.proyecto.domain.valueobject;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.util.UUID;
 
 public record SolicitudId(String valor) {
 
-    public SolicitudId {
-        if (valor == null || valor.isBlank()) {
+    public static SolicitudId of(String id) {
+        if (id == null || id.isBlank()) {
             throw new IllegalArgumentException("El ID de solicitud no puede ser null o vacío");
         }
-    }
-
-    public static SolicitudId of(String id) {
         return new SolicitudId(id);
     }
 
@@ -20,5 +18,10 @@ public record SolicitudId(String valor) {
 
     public static SolicitudId newId() {
         return new SolicitudId(UUID.randomUUID().toString());
+    }
+    
+    @JsonIgnore
+    public String getValor() {
+        return valor;
     }
 }

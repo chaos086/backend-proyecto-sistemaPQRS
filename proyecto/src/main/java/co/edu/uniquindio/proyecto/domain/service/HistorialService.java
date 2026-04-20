@@ -11,7 +11,7 @@ import java.util.UUID;
 public class HistorialService {
 
     public EntradaHistorial crearEntrada(AccionHistorial accion, UUID usuarioId, String nombreUsuario, String observacion) {
-        return new EntradaHistorial(
+        return EntradaHistorial.of(
             UUID.randomUUID(),
             Instant.now(),
             accion,

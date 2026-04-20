@@ -10,46 +10,41 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
-/**
- * Implementación en memoria del repositorio de solicitudes para pruebas
- * manuales y escenarios simples sin base de datos.
- */
 @Repository
 public class InMemorySolicitudRepository implements SolicitudRepository {
 
-    private final List<Solicitud> solicitudes = new ArrayList<>();
+    private final ConcurrentMap<String, Solicitud> storage = new ConcurrentHashMap<>();
 
     @Override
     public Solicitud guardar(Solicitud solicitud) {
-        buscarPorId(solicitud.id()).ifPresent(solicitudes::remove);
-        solicitudes.add(solicitud);
+        storage.put(solicitud.id().valor(), solicitud);
         return solicitud;
     }
 
     @Override
     public Optional<Solicitud> buscarPorId(SolicitudId id) {
-        return solicitudes.stream()
-                .filter(solicitud -> solicitud.id().valor().equals(id.valor()))
-                .findFirst();
+        return Optional.ofNullable(storage.get(id.valor()));
     }
 
     @Override
     public List<Solicitud> buscarTodas() {
-        return List.copyOf(solicitudes);
+        return new ArrayList<>(storage.values());
     }
 
     @Override
     public List<Solicitud> buscarPorEstado(EstadoSolicitud estado) {
-        return solicitudes.stream()
-                .filter(solicitud -> solicitud.estado() == estado)
+        return storage.values().stream()
+                .filter(s -> s.estado() == estado)
                 .toList();
     }
 
     @Override
     public List<Solicitud> buscarPorSolicitanteId(UUID solicitanteId) {
-        return solicitudes.stream()
-                .filter(solicitud -> solicitud.solicitanteId().equals(solicitanteId))
+        return storage.values().stream()
+                .filter(s -> s.solicitanteId().equals(solicitanteId))
                 .toList();
     }
 }
