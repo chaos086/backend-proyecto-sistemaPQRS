@@ -32,5 +32,13 @@ public interface UsuarioRepository {
      *
      * @return lista completa de usuarios
      */
-    List<Usuario> buscarTodos();
+    List<Usuario> buscarTodas();
+
+    /**
+     * Recupera los usuarios filtrados por estado.
+     *
+     * @param estado estado por el que se desea filtrar
+     * @return lista de usuarios filtrados
+     */
+    List<Usuario> buscarPorEstado(co.edu.uniquindio.proyecto.domain.valueobject.enums.EstadoUsuario estado);
 }

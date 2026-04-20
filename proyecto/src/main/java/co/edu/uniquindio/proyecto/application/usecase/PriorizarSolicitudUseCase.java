@@ -50,7 +50,7 @@ public class PriorizarSolicitudUseCase {
                 .orElseThrow(() -> new DomainException("Coordinador no encontrado"));
 
         solicitudDomainService.validarPriorizar(solicitud);
-        solicitud.priorizar(prioridad, new JustificacionPrioridad(justificacion), coordinadorId, coordinador.nombre());
+        solicitud.priorizar(prioridad, JustificacionPrioridad.of(justificacion), coordinadorId, coordinador.nombre());
 
         return solicitudRepository.guardar(solicitud);
     }

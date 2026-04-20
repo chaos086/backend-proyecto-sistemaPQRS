@@ -62,7 +62,7 @@ public class CrearSolicitudUseCase {
         List<Solicitud> solicitudesExistentes = solicitudRepository.buscarTodas();
         solicitudDomainService.validarCrearSolicitud(solicitante, solicitudesExistentes);
 
-        DescripcionSolicitud descripcionVO = new DescripcionSolicitud(descripcion);
+        DescripcionSolicitud descripcionVO = DescripcionSolicitud.of(descripcion);
         Solicitud solicitud = Solicitud.crear(
                 solicitanteId,
                 nombreSolicitante,

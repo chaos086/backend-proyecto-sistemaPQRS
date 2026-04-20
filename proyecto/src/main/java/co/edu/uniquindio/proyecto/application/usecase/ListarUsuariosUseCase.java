@@ -24,6 +24,6 @@ public class ListarUsuariosUseCase {
      * @return lista de usuarios
      */
     public List<Usuario> ejecutar() {
-        return usuarioRepository.buscarTodos();
+        return usuarioRepository.buscarTodas();
     }
 }

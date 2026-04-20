@@ -3,6 +3,7 @@ package co.edu.uniquindio.proyecto.infrastructure.persistence.memory;
 import co.edu.uniquindio.proyecto.domain.entity.Usuario;
 import co.edu.uniquindio.proyecto.domain.repository.UsuarioRepository;
 import co.edu.uniquindio.proyecto.domain.valueobject.IdentificacionUsuario;
+import co.edu.uniquindio.proyecto.domain.valueobject.enums.EstadoUsuario;
 import org.springframework.stereotype.Repository;
 
 import java.util.ArrayList;
@@ -10,6 +11,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.stream.Collectors;
 
 @Repository
 public class InMemoryUsuarioRepository implements UsuarioRepository {
@@ -28,7 +30,14 @@ public class InMemoryUsuarioRepository implements UsuarioRepository {
     }
 
     @Override
-    public List<Usuario> buscarTodos() {
+    public List<Usuario> buscarTodas() {
         return new ArrayList<>(storage.values());
+    }
+
+    @Override
+    public List<Usuario> buscarPorEstado(EstadoUsuario estado) {
+        return storage.values().stream()
+                .filter(usuario -> usuario.estado() == estado)
+                .collect(Collectors.toList());
     }
 }

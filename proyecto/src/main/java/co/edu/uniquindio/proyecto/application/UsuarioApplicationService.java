@@ -30,7 +30,7 @@ public class UsuarioApplicationService {
     }
 
     public List<Usuario> listarUsuarios() {
-        return usuarioRepository.buscarTodos();
+        return usuarioRepository.buscarTodas();
     }
 
     public void desactivarUsuario(IdentificacionUsuario id) {
