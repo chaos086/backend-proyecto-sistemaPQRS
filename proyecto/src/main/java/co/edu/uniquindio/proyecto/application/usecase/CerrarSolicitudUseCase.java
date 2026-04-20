@@ -9,6 +9,7 @@ import co.edu.uniquindio.proyecto.domain.service.SolicitudDomainService;
 import co.edu.uniquindio.proyecto.domain.valueobject.IdentificacionUsuario;
 import co.edu.uniquindio.proyecto.domain.valueobject.SolicitudId;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.UUID;
 
@@ -16,6 +17,7 @@ import java.util.UUID;
  * Caso de uso encargado de cerrar una solicitud previamente atendida.
  */
 @Service
+@Transactional
 public class CerrarSolicitudUseCase {
 
     private final SolicitudRepository solicitudRepository;

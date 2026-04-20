@@ -11,6 +11,7 @@ import co.edu.uniquindio.proyecto.domain.valueobject.DescripcionSolicitud;
 import co.edu.uniquindio.proyecto.domain.valueobject.IdentificacionUsuario;
 import co.edu.uniquindio.proyecto.domain.valueobject.enums.CanalOrigen;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.UUID;
@@ -21,6 +22,7 @@ import java.util.UUID;
  * y la persistencia de la solicitud creada.
  */
 @Service
+@Transactional
 public class CrearSolicitudUseCase {
 
     private final SolicitudRepository solicitudRepository;

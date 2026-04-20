@@ -20,6 +20,7 @@ import co.edu.uniquindio.proyecto.infrastructure.api.dto.PriorizarRequest;
 import co.edu.uniquindio.proyecto.infrastructure.api.dto.SolicitudResponse;
 import co.edu.uniquindio.proyecto.infrastructure.api.mapper.SolicitudRestMapper;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -46,6 +47,7 @@ import java.util.UUID;
  */
 @RestController
 @RequestMapping("/api/solicitudes")
+@SecurityRequirement(name = "bearer-jwt")
 @Tag(name = "Solicitudes", description = "API para la gestión del ciclo de vida de solicitudes PQRS")
 public class SolicitudController {
 

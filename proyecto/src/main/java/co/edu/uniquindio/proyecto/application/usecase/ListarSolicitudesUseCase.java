@@ -3,6 +3,7 @@ package co.edu.uniquindio.proyecto.application.usecase;
 import co.edu.uniquindio.proyecto.domain.entity.Solicitud;
 import co.edu.uniquindio.proyecto.domain.repository.SolicitudRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -10,6 +11,7 @@ import java.util.List;
  * Caso de uso para listar todas las solicitudes registradas.
  */
 @Service
+@Transactional(readOnly = true)
 public class ListarSolicitudesUseCase {
 
     private final SolicitudRepository solicitudRepository;

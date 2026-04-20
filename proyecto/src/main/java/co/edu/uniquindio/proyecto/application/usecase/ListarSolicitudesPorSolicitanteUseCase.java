@@ -3,6 +3,7 @@ package co.edu.uniquindio.proyecto.application.usecase;
 import co.edu.uniquindio.proyecto.domain.entity.Solicitud;
 import co.edu.uniquindio.proyecto.domain.repository.SolicitudRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.UUID;
@@ -11,6 +12,7 @@ import java.util.UUID;
  * Caso de uso para consultar las solicitudes de un solicitante específico.
  */
 @Service
+@Transactional(readOnly = true)
 public class ListarSolicitudesPorSolicitanteUseCase {
 
     private final SolicitudRepository solicitudRepository;

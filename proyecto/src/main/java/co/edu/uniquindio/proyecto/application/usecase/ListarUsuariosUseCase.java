@@ -3,6 +3,7 @@ package co.edu.uniquindio.proyecto.application.usecase;
 import co.edu.uniquindio.proyecto.domain.entity.Usuario;
 import co.edu.uniquindio.proyecto.domain.repository.UsuarioRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -10,6 +11,7 @@ import java.util.List;
  * Caso de uso para recuperar los usuarios registrados.
  */
 @Service
+@Transactional(readOnly = true)
 public class ListarUsuariosUseCase {
 
     private final UsuarioRepository usuarioRepository;

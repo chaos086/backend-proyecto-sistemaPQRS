@@ -9,6 +9,7 @@ import co.edu.uniquindio.proyecto.domain.service.SolicitudDomainService;
 import co.edu.uniquindio.proyecto.domain.valueobject.IdentificacionUsuario;
 import co.edu.uniquindio.proyecto.domain.valueobject.SolicitudId;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.UUID;
 
@@ -18,6 +19,7 @@ import java.util.UUID;
  * solo el responsable asignado pueda completar la atención.
  */
 @Service
+@Transactional
 public class CambiarEstadoUseCase {
 
     private final SolicitudRepository solicitudRepository;

@@ -11,6 +11,7 @@ import co.edu.uniquindio.proyecto.domain.valueobject.JustificacionPrioridad;
 import co.edu.uniquindio.proyecto.domain.valueobject.SolicitudId;
 import co.edu.uniquindio.proyecto.domain.valueobject.enums.Prioridad;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.UUID;
 
@@ -18,6 +19,7 @@ import java.util.UUID;
  * Caso de uso encargado de priorizar una solicitud previamente clasificada.
  */
 @Service
+@Transactional
 public class PriorizarSolicitudUseCase {
 
     private final SolicitudRepository solicitudRepository;

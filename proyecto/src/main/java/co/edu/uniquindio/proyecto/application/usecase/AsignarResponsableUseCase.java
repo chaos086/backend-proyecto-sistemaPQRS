@@ -9,6 +9,7 @@ import co.edu.uniquindio.proyecto.domain.service.SolicitudDomainService;
 import co.edu.uniquindio.proyecto.domain.valueobject.IdentificacionUsuario;
 import co.edu.uniquindio.proyecto.domain.valueobject.SolicitudId;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.UUID;
@@ -18,6 +19,7 @@ import java.util.UUID;
  * solicitud previamente clasificada.
  */
 @Service
+@Transactional
 public class AsignarResponsableUseCase {
 
     private final SolicitudRepository solicitudRepository;

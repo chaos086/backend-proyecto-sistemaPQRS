@@ -10,6 +10,7 @@ import co.edu.uniquindio.proyecto.infrastructure.api.dto.CrearUsuarioRequest;
 import co.edu.uniquindio.proyecto.infrastructure.api.dto.UsuarioResponse;
 import co.edu.uniquindio.proyecto.infrastructure.api.mapper.UsuarioRestMapper;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -32,6 +33,7 @@ import java.util.UUID;
  */
 @RestController
 @RequestMapping("/api/usuarios")
+@SecurityRequirement(name = "bearer-jwt")
 @Tag(name = "Usuarios", description = "API para la gestión de usuarios del sistema PQRS")
 public class UsuarioController {
 

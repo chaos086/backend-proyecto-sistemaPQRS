@@ -10,6 +10,7 @@ import co.edu.uniquindio.proyecto.domain.valueobject.IdentificacionUsuario;
 import co.edu.uniquindio.proyecto.domain.valueobject.SolicitudId;
 import co.edu.uniquindio.proyecto.domain.valueobject.enums.TipoSolicitud;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.UUID;
 
@@ -17,6 +18,7 @@ import java.util.UUID;
  * Caso de uso encargado de clasificar una solicitud registrada.
  */
 @Service
+@Transactional
 public class ClasificarSolicitudUseCase {
 
     private final SolicitudRepository solicitudRepository;

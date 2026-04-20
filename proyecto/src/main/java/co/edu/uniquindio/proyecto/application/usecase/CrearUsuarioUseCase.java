@@ -5,11 +5,13 @@ import co.edu.uniquindio.proyecto.domain.repository.UsuarioRepository;
 import co.edu.uniquindio.proyecto.domain.valueobject.Email;
 import co.edu.uniquindio.proyecto.domain.valueobject.enums.Rol;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Caso de uso para registrar usuarios del sistema.
  */
 @Service
+@Transactional
 public class CrearUsuarioUseCase {
 
     private final UsuarioRepository usuarioRepository;
