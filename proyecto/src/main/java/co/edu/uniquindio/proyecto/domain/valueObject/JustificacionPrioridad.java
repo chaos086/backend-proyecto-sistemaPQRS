@@ -1,7 +1,6 @@
 package co.edu.uniquindio.proyecto.domain.valueobject;
 
 import co.edu.uniquindio.proyecto.domain.exception.DomainException;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 
 public record JustificacionPrioridad(String valor) {
 
@@ -23,10 +22,5 @@ public record JustificacionPrioridad(String valor) {
             throw new DomainException("La justificación no puede exceder " + MAX_CARACTERES + " caracteres");
         }
         return new JustificacionPrioridad(justificacion);
-    }
-    
-    @JsonIgnore
-    public String getValor() {
-        return valor;
     }
 }

@@ -1,6 +1,5 @@
 package co.edu.uniquindio.proyecto.domain.valueobject;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.util.UUID;
 
 public record SolicitudId(String valor) {
@@ -18,10 +17,5 @@ public record SolicitudId(String valor) {
 
     public static SolicitudId newId() {
         return new SolicitudId(UUID.randomUUID().toString());
-    }
-    
-    @JsonIgnore
-    public String getValor() {
-        return valor;
     }
 }

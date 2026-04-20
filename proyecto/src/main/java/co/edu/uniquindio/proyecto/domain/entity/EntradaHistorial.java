@@ -2,7 +2,6 @@ package co.edu.uniquindio.proyecto.domain.entity;
 
 import co.edu.uniquindio.proyecto.domain.exception.DomainException;
 import co.edu.uniquindio.proyecto.domain.valueobject.enums.AccionHistorial;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import java.time.Instant;
 import java.util.UUID;
@@ -16,29 +15,6 @@ public record EntradaHistorial(
     String observacion
 ) {
 
-    @JsonIgnore
-    @Override
-    public UUID id() { return id; }
-
-    @JsonIgnore
-    @Override
-    public Instant fechaHora() { return fechaHora; }
-
-    @JsonIgnore
-    @Override
-    public AccionHistorial accion() { return accion; }
-
-    @JsonIgnore
-    @Override
-    public UUID usuarioId() { return usuarioId; }
-
-    @JsonIgnore
-    @Override
-    public String nombreUsuario() { return nombreUsuario; }
-
-    @JsonIgnore
-    @Override
-    public String observacion() { return observacion; }
     public EntradaHistorial {
         if (observacion == null) observacion = "";
     }

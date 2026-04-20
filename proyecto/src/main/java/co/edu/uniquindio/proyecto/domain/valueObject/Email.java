@@ -1,7 +1,6 @@
 package co.edu.uniquindio.proyecto.domain.valueobject;
 
 import co.edu.uniquindio.proyecto.domain.exception.DomainException;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.util.regex.Pattern;
 
 public record Email(String valor) {
@@ -18,10 +17,5 @@ public record Email(String valor) {
             throw new DomainException("El formato del email es inválido");
         }
         return new Email(email);
-    }
-    
-    @JsonIgnore
-    public String getValor() {
-        return valor;
     }
 }

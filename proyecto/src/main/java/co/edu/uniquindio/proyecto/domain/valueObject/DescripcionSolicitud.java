@@ -1,7 +1,6 @@
 package co.edu.uniquindio.proyecto.domain.valueobject;
 
 import co.edu.uniquindio.proyecto.domain.exception.DomainException;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 
 public record DescripcionSolicitud(String valor) {
 
@@ -19,10 +18,5 @@ public record DescripcionSolicitud(String valor) {
             throw new DomainException("La descripción no puede exceder " + MAX_CARACTERES + " caracteres");
         }
         return new DescripcionSolicitud(descripcion);
-    }
-    
-    @JsonIgnore
-    public String getValor() {
-        return valor;
     }
 }

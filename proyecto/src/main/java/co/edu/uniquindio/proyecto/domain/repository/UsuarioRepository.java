@@ -2,6 +2,7 @@ package co.edu.uniquindio.proyecto.domain.repository;
 
 import co.edu.uniquindio.proyecto.domain.entity.Usuario;
 import co.edu.uniquindio.proyecto.domain.valueobject.IdentificacionUsuario;
+import co.edu.uniquindio.proyecto.domain.valueobject.enums.EstadoUsuario;
 
 import java.util.List;
 import java.util.Optional;
@@ -10,7 +11,7 @@ import java.util.Optional;
  * Contrato del dominio para el acceso y almacenamiento de usuarios.
  */
 public interface UsuarioRepository {
-
+ 
     /**
      * Almacena un usuario en el repositorio.
      *
@@ -40,5 +41,5 @@ public interface UsuarioRepository {
      * @param estado estado por el que se desea filtrar
      * @return lista de usuarios filtrados
      */
-    List<Usuario> buscarPorEstado(co.edu.uniquindio.proyecto.domain.valueobject.enums.EstadoUsuario estado);
+    List<Usuario> buscarPorEstado(EstadoUsuario estado);
 }
