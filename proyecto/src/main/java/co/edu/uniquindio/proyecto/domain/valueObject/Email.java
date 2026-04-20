@@ -18,4 +18,8 @@ public record Email(String valor) {
         }
         return new Email(email);
     }
+
+    public String getValor() {
+        return valor;
+    }
 }

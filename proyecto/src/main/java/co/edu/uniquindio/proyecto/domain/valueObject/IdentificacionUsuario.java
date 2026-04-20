@@ -19,4 +19,8 @@ public record IdentificacionUsuario(String valor) {
     public static IdentificacionUsuario newId() {
         return new IdentificacionUsuario(UUID.randomUUID().toString());
     }
+
+    public String getValor() {
+        return valor;
+    }
 }

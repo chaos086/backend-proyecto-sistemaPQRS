@@ -18,4 +18,8 @@ public record SolicitudId(String valor) {
     public static SolicitudId newId() {
         return new SolicitudId(UUID.randomUUID().toString());
     }
+
+    public String getValor() {
+        return valor;
+    }
 }

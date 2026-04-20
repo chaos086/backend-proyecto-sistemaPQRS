@@ -15,8 +15,8 @@ import java.util.List;
 @Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
 public interface UsuarioRestMapper {
 
-    @Mapping(source = "id.valor", target = "id")
-    @Mapping(source = "email.valor", target = "email")
+    @Mapping(target = "id", expression = "java(usuario.id().valor())")
+    @Mapping(target = "email", expression = "java(usuario.email().valor())")
     UsuarioResponse toResponse(Usuario usuario);
 
     List<UsuarioResponse> toResponseList(List<Usuario> usuarios);

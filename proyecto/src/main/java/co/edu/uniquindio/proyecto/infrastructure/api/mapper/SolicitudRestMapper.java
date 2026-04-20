@@ -21,7 +21,7 @@ import java.util.UUID;
 @Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
 public interface SolicitudRestMapper {
 
-    @Mapping(source = "id.valor", target = "id")
+    @Mapping(target = "id", expression = "java(solicitud.id().valor())")
     @Mapping(target = "tipoSolicitud",
             expression = "java(solicitud.tipoSolicitud() == null ? null : solicitud.tipoSolicitud().name())")
     @Mapping(target = "descripcion",
