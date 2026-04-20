@@ -4,6 +4,8 @@ import co.edu.uniquindio.proyecto.domain.entity.Solicitud;
 import co.edu.uniquindio.proyecto.domain.repository.SolicitudRepository;
 import co.edu.uniquindio.proyecto.domain.valueobject.SolicitudId;
 import co.edu.uniquindio.proyecto.domain.valueobject.enums.EstadoSolicitud;
+import co.edu.uniquindio.proyecto.infrastructure.persistence.PersistenceProfiles;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
 
 import java.util.ArrayList;
@@ -14,6 +16,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 @Repository
+@Profile(PersistenceProfiles.MEMORY)
 public class InMemorySolicitudRepository implements SolicitudRepository {
 
     private final ConcurrentMap<String, Solicitud> storage = new ConcurrentHashMap<>();

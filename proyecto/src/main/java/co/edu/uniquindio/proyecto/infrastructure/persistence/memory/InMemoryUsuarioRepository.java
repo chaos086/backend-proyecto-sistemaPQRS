@@ -4,6 +4,8 @@ import co.edu.uniquindio.proyecto.domain.entity.Usuario;
 import co.edu.uniquindio.proyecto.domain.repository.UsuarioRepository;
 import co.edu.uniquindio.proyecto.domain.valueobject.IdentificacionUsuario;
 import co.edu.uniquindio.proyecto.domain.valueobject.enums.EstadoUsuario;
+import co.edu.uniquindio.proyecto.infrastructure.persistence.PersistenceProfiles;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
 
 import java.util.ArrayList;
@@ -14,6 +16,7 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Collectors;
 
 @Repository
+@Profile(PersistenceProfiles.MEMORY)
 public class InMemoryUsuarioRepository implements UsuarioRepository {
 
     private final ConcurrentMap<String, Usuario> storage = new ConcurrentHashMap<>();

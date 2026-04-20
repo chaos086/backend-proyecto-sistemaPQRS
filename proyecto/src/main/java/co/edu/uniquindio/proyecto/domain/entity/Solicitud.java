@@ -62,6 +62,87 @@ public class Solicitud {
         registrarHistorial(AccionHistorial.REGISTRAR_SOLICITUD, solicitanteId, nombreSolicitante, "Solicitud registrada");
     }
 
+    /**
+     * Constructor de rehidratación desde persistencia.
+     */
+    private Solicitud(
+            SolicitudId id,
+            UUID solicitanteId,
+            String nombreSolicitante,
+            CanalOrigen canalOrigen,
+            Instant fechaRegistro,
+            TipoSolicitud tipoSolicitud,
+            DescripcionSolicitud descripcion,
+            Prioridad prioridad,
+            JustificacionPrioridad justificacionPrioridad,
+            EstadoSolicitud estado,
+            UUID responsableId,
+            String nombreResponsable,
+            List<EntradaHistorial> historialExistente,
+            HistorialService historialService) {
+
+        if (id == null) throw new DomainException("Solicitud.id es obligatorio");
+        if (solicitanteId == null) throw new DomainException("Solicitud.solicitanteId es obligatorio");
+        if (nombreSolicitante == null || nombreSolicitante.isBlank()) throw new DomainException("Solicitud.nombreSolicitante es obligatorio");
+        if (canalOrigen == null) throw new DomainException("Solicitud.canalOrigen es obligatorio");
+        if (fechaRegistro == null) throw new DomainException("Solicitud.fechaRegistro es obligatoria");
+        if (descripcion == null) throw new DomainException("Solicitud.descripcion es obligatoria");
+        if (estado == null) throw new DomainException("Solicitud.estado es obligatorio");
+        if (historialService == null) throw new DomainException("Solicitud.historialService es obligatorio");
+
+        this.id = id;
+        this.solicitanteId = solicitanteId;
+        this.nombreSolicitante = nombreSolicitante;
+        this.canalOrigen = canalOrigen;
+        this.fechaRegistro = fechaRegistro;
+        this.descripcion = descripcion;
+        this.estado = estado;
+        this.historialService = historialService;
+        this.tipoSolicitud = tipoSolicitud;
+        this.prioridad = prioridad;
+        this.justificacionPrioridad = justificacionPrioridad;
+        this.responsableId = responsableId;
+        this.nombreResponsable = nombreResponsable;
+        if (historialExistente != null) {
+            this.historial.addAll(historialExistente);
+        }
+    }
+
+    /**
+     * Rehidrata el agregado desde la capa de persistencia (JPA). No usar para nuevas solicitudes de negocio.
+     */
+    public static Solicitud rehidratar(
+            SolicitudId id,
+            UUID solicitanteId,
+            String nombreSolicitante,
+            CanalOrigen canalOrigen,
+            Instant fechaRegistro,
+            TipoSolicitud tipoSolicitud,
+            DescripcionSolicitud descripcion,
+            Prioridad prioridad,
+            JustificacionPrioridad justificacionPrioridad,
+            EstadoSolicitud estado,
+            UUID responsableId,
+            String nombreResponsable,
+            List<EntradaHistorial> historialExistente,
+            HistorialService historialService) {
+        return new Solicitud(
+                id,
+                solicitanteId,
+                nombreSolicitante,
+                canalOrigen,
+                fechaRegistro,
+                tipoSolicitud,
+                descripcion,
+                prioridad,
+                justificacionPrioridad,
+                estado,
+                responsableId,
+                nombreResponsable,
+                historialExistente,
+                historialService);
+    }
+
     public static Solicitud crear(UUID solicitanteId, String nombreSolicitante, CanalOrigen canalOrigen, DescripcionSolicitud descripcion, HistorialService historialService) {
         return new Solicitud(
                 SolicitudId.newId(),
