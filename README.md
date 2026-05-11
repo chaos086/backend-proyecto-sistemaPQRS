@@ -270,7 +270,7 @@ Para autenticarse en la API:
 ```bash
 curl -X POST http://localhost:8080/api/auth/login \
   -H "Content-Type: application/json" \
-  -d '{"email":"admin@uniquindio.edu.co","password":"Admin#12345"}'
+  -d '{"email":"demo@uniquindio.edu.co","password":"Demo#12345"}'
 ```
 
 Respuesta:
