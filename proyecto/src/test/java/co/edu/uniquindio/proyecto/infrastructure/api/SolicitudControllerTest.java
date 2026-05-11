@@ -16,6 +16,7 @@ import co.edu.uniquindio.proyecto.domain.service.HistorialService;
 import co.edu.uniquindio.proyecto.domain.valueobject.DescripcionSolicitud;
 import co.edu.uniquindio.proyecto.domain.valueobject.enums.CanalOrigen;
 import co.edu.uniquindio.proyecto.infrastructure.api.mapper.SolicitudRestMapperImpl;
+import co.edu.uniquindio.proyecto.security.JwtService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -66,6 +67,9 @@ class SolicitudControllerTest {
     ListarSolicitudesPorSolicitanteUseCase listarSolicitudesPorSolicitanteUseCase;
     @MockitoBean
     ConsultarSolicitudesPorEstadoUseCase consultarSolicitudesPorEstadoUseCase;
+
+    @MockitoBean
+    JwtService jwtService;
 
     @Test
     void crearSolicitud_rechazaCuerpoInvalido() throws Exception {

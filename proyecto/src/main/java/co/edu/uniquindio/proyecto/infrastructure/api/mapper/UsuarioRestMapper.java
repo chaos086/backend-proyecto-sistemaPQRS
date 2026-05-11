@@ -16,7 +16,10 @@ import java.util.List;
 public interface UsuarioRestMapper {
 
     @Mapping(target = "id", expression = "java(usuario.id().valor())")
+    @Mapping(target = "nombre", expression = "java(usuario.nombre())")
+    @Mapping(target = "rol", expression = "java(usuario.rol().name())")
     @Mapping(target = "email", expression = "java(usuario.email().valor())")
+    @Mapping(target = "estado", expression = "java(usuario.estado().name())")
     UsuarioResponse toResponse(Usuario usuario);
 
     List<UsuarioResponse> toResponseList(List<Usuario> usuarios);

@@ -10,6 +10,7 @@ import co.edu.uniquindio.proyecto.domain.exception.DomainException;
 import co.edu.uniquindio.proyecto.domain.valueobject.Email;
 import co.edu.uniquindio.proyecto.domain.valueobject.enums.Rol;
 import co.edu.uniquindio.proyecto.infrastructure.api.mapper.UsuarioRestMapperImpl;
+import co.edu.uniquindio.proyecto.security.JwtService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,6 +51,9 @@ class UsuarioControllerTest {
     ActivarUsuarioUseCase activarUsuarioUseCase;
     @MockitoBean
     DesactivarUsuarioUseCase desactivarUsuarioUseCase;
+
+    @MockitoBean
+    JwtService jwtService;
 
     @Test
     void crearUsuario_rechazaEmailInvalido() throws Exception {

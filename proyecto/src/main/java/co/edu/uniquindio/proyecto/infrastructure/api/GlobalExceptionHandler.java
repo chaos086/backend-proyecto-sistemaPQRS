@@ -48,7 +48,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiErrorResponse> handleDomainException(
             DomainException exception,
             HttpServletRequest request) {
-        HttpStatus status = exception.getMessage() != null && exception.getMessage().toLowerCase().contains("no encontrado")
+        HttpStatus status = exception.getMessage() != null && exception.getMessage().toLowerCase().contains("no encontr")
                 ? HttpStatus.NOT_FOUND
                 : HttpStatus.BAD_REQUEST;
 

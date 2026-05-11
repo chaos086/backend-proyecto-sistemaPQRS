@@ -22,6 +22,10 @@ import java.util.UUID;
 public interface SolicitudRestMapper {
 
     @Mapping(target = "id", expression = "java(solicitud.id().valor())")
+    @Mapping(target = "solicitanteId", expression = "java(solicitud.solicitanteId().toString())")
+    @Mapping(target = "nombreSolicitante", expression = "java(solicitud.nombreSolicitante())")
+    @Mapping(target = "canalOrigen", expression = "java(solicitud.canalOrigen().name())")
+    @Mapping(target = "fechaRegistro", expression = "java(solicitud.fechaRegistro())")
     @Mapping(target = "tipoSolicitud",
             expression = "java(solicitud.tipoSolicitud() == null ? null : solicitud.tipoSolicitud().name())")
     @Mapping(target = "descripcion",
@@ -30,6 +34,11 @@ public interface SolicitudRestMapper {
             expression = "java(solicitud.prioridad() == null ? null : solicitud.prioridad().name())")
     @Mapping(target = "justificacionPrioridad",
             expression = "java(solicitud.justificacionPrioridad() == null ? null : solicitud.justificacionPrioridad().valor())")
+    @Mapping(target = "estado", expression = "java(solicitud.estado().name())")
+    @Mapping(target = "responsableId",
+            expression = "java(solicitud.responsableId() == null ? null : solicitud.responsableId().toString())")
+    @Mapping(target = "nombreResponsable", expression = "java(solicitud.nombreResponsable())")
+    @Mapping(target = "historial", expression = "java(toHistorialResponseList(solicitud.historial()))")
     SolicitudResponse toResponse(Solicitud solicitud);
 
     List<SolicitudResponse> toResponseList(List<Solicitud> solicitudes);
