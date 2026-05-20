@@ -16,9 +16,11 @@ import co.edu.uniquindio.proyecto.infrastructure.api.dto.AtenderRequest;
 import co.edu.uniquindio.proyecto.infrastructure.api.dto.CerrarRequest;
 import co.edu.uniquindio.proyecto.infrastructure.api.dto.ClasificarRequest;
 import co.edu.uniquindio.proyecto.infrastructure.api.dto.CrearSolicitudRequest;
+import co.edu.uniquindio.proyecto.infrastructure.api.dto.PageResponse;
 import co.edu.uniquindio.proyecto.infrastructure.api.dto.PriorizarRequest;
 import co.edu.uniquindio.proyecto.infrastructure.api.dto.SolicitudResponse;
 import co.edu.uniquindio.proyecto.infrastructure.api.mapper.SolicitudRestMapper;
+import co.edu.uniquindio.proyecto.infrastructure.persistence.jpa.pqrs.SolicitudEntityRepository;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -62,6 +64,7 @@ public class SolicitudController {
     private final ListarSolicitudesPorSolicitanteUseCase listarSolicitudesPorSolicitanteUseCase;
     private final ConsultarSolicitudesPorEstadoUseCase consultarSolicitudesPorEstadoUseCase;
     private final SolicitudRestMapper solicitudRestMapper;
+    private final SolicitudEntityRepository solicitudEntityRepository;
 
     public SolicitudController(
             CrearSolicitudUseCase crearSolicitudUseCase,
@@ -74,7 +77,8 @@ public class SolicitudController {
             ListarSolicitudesUseCase listarSolicitudesUseCase,
             ListarSolicitudesPorSolicitanteUseCase listarSolicitudesPorSolicitanteUseCase,
             ConsultarSolicitudesPorEstadoUseCase consultarSolicitudesPorEstadoUseCase,
-            SolicitudRestMapper solicitudRestMapper) {
+            SolicitudRestMapper solicitudRestMapper,
+            SolicitudEntityRepository solicitudEntityRepository) {
         this.crearSolicitudUseCase = crearSolicitudUseCase;
         this.clasificarSolicitudUseCase = clasificarSolicitudUseCase;
         this.priorizarSolicitudUseCase = priorizarSolicitudUseCase;
@@ -86,6 +90,7 @@ public class SolicitudController {
         this.listarSolicitudesPorSolicitanteUseCase = listarSolicitudesPorSolicitanteUseCase;
         this.consultarSolicitudesPorEstadoUseCase = consultarSolicitudesPorEstadoUseCase;
         this.solicitudRestMapper = solicitudRestMapper;
+        this.solicitudEntityRepository = solicitudEntityRepository;
     }
 
     /**
@@ -113,6 +118,28 @@ public class SolicitudController {
     @Operation(summary = "Listar solicitudes", description = "Obtiene todas las solicitudes del sistema")
     public ResponseEntity<List<SolicitudResponse>> listarSolicitudes() {
         return ResponseEntity.ok(solicitudRestMapper.toResponseList(listarSolicitudesUseCase.ejecutar()));
+    }
+
+    /**
+     * Lista las solicitudes con paginaci\u00F3n server-side.
+     * @param page n\u00FAmero de p\u00E1gina (default 0)
+     * @param size tama\u00F1o de p\u00E1gina (default 10)
+     * @return P\u00E1gina de solicitudes con metadatos
+     */
+    @GetMapping("/page")
+    @Operation(summary = "Listar solicitudes paginadas", description = "Obtiene solicitudes con paginaci\u00F3n server-side")
+    public ResponseEntity<PageResponse<SolicitudResponse>> listarSolicitudesPaginadas(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        var all = solicitudRestMapper.toResponseList(listarSolicitudesUseCase.ejecutar());
+        int total = all.size();
+        int from = Math.min(page * size, total);
+        int to = Math.min(from + size, total);
+        List<SolicitudResponse> content = all.subList(from, to);
+        int totalPages = (int) Math.ceil((double) total / size);
+        return ResponseEntity.ok(new PageResponse<>(
+                content, total, totalPages, size, page,
+                page == 0, page >= totalPages - 1, total == 0));
     }
 
     /**

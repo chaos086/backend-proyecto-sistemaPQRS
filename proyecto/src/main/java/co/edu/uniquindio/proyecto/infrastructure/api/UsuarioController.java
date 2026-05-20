@@ -7,8 +7,10 @@ import co.edu.uniquindio.proyecto.application.usecase.ListarUsuariosUseCase;
 import co.edu.uniquindio.proyecto.application.usecase.ObtenerUsuarioUseCase;
 import co.edu.uniquindio.proyecto.domain.entity.Usuario;
 import co.edu.uniquindio.proyecto.infrastructure.api.dto.CrearUsuarioRequest;
+import co.edu.uniquindio.proyecto.infrastructure.api.dto.PageResponse;
 import co.edu.uniquindio.proyecto.infrastructure.api.dto.UsuarioResponse;
 import co.edu.uniquindio.proyecto.infrastructure.api.mapper.UsuarioRestMapper;
+import co.edu.uniquindio.proyecto.infrastructure.persistence.jpa.pqrs.UsuarioEntityRepository;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -43,6 +45,7 @@ public class UsuarioController {
     private final ActivarUsuarioUseCase activarUsuarioUseCase;
     private final DesactivarUsuarioUseCase desactivarUsuarioUseCase;
     private final UsuarioRestMapper usuarioRestMapper;
+    private final UsuarioEntityRepository usuarioEntityRepository;
 
     public UsuarioController(
             CrearUsuarioUseCase crearUsuarioUseCase,
@@ -50,13 +53,15 @@ public class UsuarioController {
             ListarUsuariosUseCase listarUsuariosUseCase,
             ActivarUsuarioUseCase activarUsuarioUseCase,
             DesactivarUsuarioUseCase desactivarUsuarioUseCase,
-            UsuarioRestMapper usuarioRestMapper) {
+            UsuarioRestMapper usuarioRestMapper,
+            UsuarioEntityRepository usuarioEntityRepository) {
         this.crearUsuarioUseCase = crearUsuarioUseCase;
         this.obtenerUsuarioUseCase = obtenerUsuarioUseCase;
         this.listarUsuariosUseCase = listarUsuariosUseCase;
         this.activarUsuarioUseCase = activarUsuarioUseCase;
         this.desactivarUsuarioUseCase = desactivarUsuarioUseCase;
         this.usuarioRestMapper = usuarioRestMapper;
+        this.usuarioEntityRepository = usuarioEntityRepository;
     }
 
     /**
@@ -83,6 +88,28 @@ public class UsuarioController {
     @Operation(summary = "Listar usuarios", description = "Obtiene todos los usuarios registrados en el sistema")
     public ResponseEntity<List<UsuarioResponse>> listarUsuarios() {
         return ResponseEntity.ok(usuarioRestMapper.toResponseList(listarUsuariosUseCase.ejecutar()));
+    }
+
+    /**
+     * Lista los usuarios con paginaci\u00F3n server-side.
+     * @param page n\u00FAmero de p\u00E1gina (default 0)
+     * @param size tama\u00F1o de p\u00E1gina (default 10)
+     * @return P\u00E1gina de usuarios con metadatos
+     */
+    @GetMapping("/page")
+    @Operation(summary = "Listar usuarios paginados", description = "Obtiene usuarios con paginaci\u00F3n server-side")
+    public ResponseEntity<PageResponse<UsuarioResponse>> listarUsuariosPaginados(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        var all = usuarioRestMapper.toResponseList(listarUsuariosUseCase.ejecutar());
+        int total = all.size();
+        int from = Math.min(page * size, total);
+        int to = Math.min(from + size, total);
+        List<UsuarioResponse> content = all.subList(from, to);
+        int totalPages = (int) Math.ceil((double) total / size);
+        return ResponseEntity.ok(new PageResponse<>(
+                content, total, totalPages, size, page,
+                page == 0, page >= totalPages - 1, total == 0));
     }
 
     /**
